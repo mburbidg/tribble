@@ -1,0 +1,3503 @@
+GQLProgram
+    = programActivity sessionCloseCommand?
+    | sessionCloseCommand
+    ;
+
+programActivity
+    = sessionActivity
+    | transactionActivity
+    ;
+
+sessionActivity
+    = sessionResetCommand+
+    | sessionSetCommand+ (sessionResetCommand+)?
+    ;
+
+transactionActivity
+    = startTransactionCommand (procedureSpecification endTransactionCommand?)?
+    | procedureSpecification endTransactionCommand?
+    | endTransactionCommand
+    ;
+
+endTransactionCommand
+    = rollbackCommand
+    | commitCommand
+    ;
+
+sessionSetCommand
+    = " SESSION " " SET " (sessionSetSchemaClause | sessionSetGraphClause | sessionSetTimeZoneClause | sessionSetParameterClause)
+    ;
+
+sessionSetSchemaClause
+    = " SCHEMA " schemaReference
+    ;
+
+sessionSetGraphClause
+    = " PROPERTY "? " GRAPH " graphExpression
+    ;
+
+sessionSetTimeZoneClause
+    = " TIME " " ZONE " setTimeZoneValue
+    ;
+
+setTimeZoneValue
+    = timeZoneString
+    ;
+
+sessionSetParameterClause
+    = sessionSetGraphParameterClause
+    | sessionSetBindingTableParameterClause
+    | sessionSetValueParameterClause
+    ;
+
+sessionSetGraphParameterClause
+    = " PROPERTY "? " GRAPH " sessionSetParameterName optTypedGraphInitializer
+    ;
+
+sessionSetBindingTableParameterClause
+    = " BINDING "? " TABLE " sessionSetParameterName optTypedBindingTableInitializer
+    ;
+
+sessionSetValueParameterClause
+    = " VALUE " sessionSetParameterName optTypedValueInitializer
+    ;
+
+sessionSetParameterName
+    = (" IF " " NOT " " EXISTS ")? sessionParameterSpecification
+    ;
+
+sessionResetCommand
+    = " SESSION " " RESET " sessionResetArguments?
+    ;
+
+sessionResetArguments
+    = " ALL "? (" PARAMETERS " | " CHARACTERISTICS ")
+    | " SCHEMA "
+    | " PROPERTY "? " GRAPH "
+    | " TIME " " ZONE "
+    | " PARAMETER "? sessionParameterSpecification
+    ;
+
+sessionCloseCommand
+    = " SESSION " " CLOSE "
+    ;
+
+sessionParameterSpecification
+    = generalParameterReference
+    ;
+
+startTransactionCommand
+    = " START " " TRANSACTION " transactionCharacteristics?
+    ;
+
+transactionCharacteristics
+    = transactionMode ((comma transactionMode)+)?
+    ;
+
+transactionMode
+    = transactionAccessMode
+    ;
+
+transactionAccessMode
+    = " READ " " ONLY "
+    | " READ " " WRITE "
+    ;
+
+rollbackCommand
+    = " ROLLBACK "
+    ;
+
+commitCommand
+    = " COMMIT "
+    ;
+
+nestedProcedureSpecification
+    = leftBrace procedureSpecification rightBrace
+    ;
+
+procedureSpecification
+    = catalogModifyingProcedureSpecification
+    | dataModifyingProcedureSpecification
+    | querySpecification
+    ;
+
+catalogModifyingProcedureSpecification
+    = procedureBody
+    ;
+
+nestedDataModifyingProcedureSpecification
+    = leftBrace dataModifyingProcedureSpecification rightBrace
+    ;
+
+dataModifyingProcedureSpecification
+    = procedureBody
+    ;
+
+nestedQuerySpecification
+    = leftBrace querySpecification rightBrace
+    ;
+
+querySpecification
+    = procedureBody
+    ;
+
+procedureBody
+    = atSchemaClause? bindingVariableDefinitionBlock? statementBlock
+    ;
+
+bindingVariableDefinitionBlock
+    = bindingVariableDefinition+
+    ;
+
+bindingVariableDefinition
+    = graphVariableDefinition
+    | bindingTableVariableDefinition
+    | valueVariableDefinition
+    ;
+
+statementBlock
+    = statement (nextStatement+)?
+    ;
+
+statement
+    = linearCatalogModifyingStatement
+    | linearDataModifyingStatement
+    | compositeQueryStatement
+    ;
+
+nextStatement
+    = " NEXT " yieldClause? statement
+    ;
+
+graphVariableDefinition
+    = " PROPERTY "? " GRAPH " bindingVariable optTypedGraphInitializer
+    ;
+
+optTypedGraphInitializer
+    = (typed? graphReferenceValueType)? graphInitializer
+    ;
+
+graphInitializer
+    = equalsOperator graphExpression
+    ;
+
+bindingTableVariableDefinition
+    = " BINDING "? " TABLE " bindingVariable optTypedBindingTableInitializer
+    ;
+
+optTypedBindingTableInitializer
+    = (typed? bindingTableReferenceValueType)? bindingTableInitializer
+    ;
+
+bindingTableInitializer
+    = equalsOperator bindingTableExpression
+    ;
+
+valueVariableDefinition
+    = " VALUE " bindingVariable optTypedValueInitializer
+    ;
+
+optTypedValueInitializer
+    = (typed? valueType)? valueInitializer
+    ;
+
+valueInitializer
+    = equalsOperator valueExpression
+    ;
+
+graphExpression
+    = objectExpressionPrimary
+    | graphReference
+    | objectNameOrBindingVariable
+    | currentGraph
+    ;
+
+currentGraph
+    = " CURRENT_PROPERTY_GRAPH "
+    | " CURRENT_GRAPH "
+    ;
+
+bindingTableExpression
+    = nestedBindingTableQuerySpecification
+    | objectExpressionPrimary
+    | bindingTableReference
+    | objectNameOrBindingVariable
+    ;
+
+nestedBindingTableQuerySpecification
+    = nestedQuerySpecification
+    ;
+
+objectExpressionPrimary
+    = " VARIABLE " valueExpressionPrimary
+    | parenthesizedValueExpression
+    | nonParenthesizedValueExpressionPrimarySpecialCase
+    ;
+
+linearCatalogModifyingStatement
+    = simpleCatalogModifyingStatement+
+    ;
+
+simpleCatalogModifyingStatement
+    = primitiveCatalogModifyingStatement
+    | callCatalogModifyingProcedureStatement
+    ;
+
+primitiveCatalogModifyingStatement
+    = createSchemaStatement
+    | dropSchemaStatement
+    | createGraphStatement
+    | dropGraphStatement
+    | createGraphTypeStatement
+    | dropGraphTypeStatement
+    ;
+
+createSchemaStatement
+    = " CREATE " " SCHEMA " (" IF " " NOT " " EXISTS ")? catalogSchemaParentAndName
+    ;
+
+dropSchemaStatement
+    = " DROP " " SCHEMA " (" IF " " EXISTS ")? catalogSchemaParentAndName
+    ;
+
+createGraphStatement
+    = " CREATE " (" PROPERTY "? " GRAPH " (" IF " " NOT " " EXISTS ")? | " OR " " REPLACE " " PROPERTY "? " GRAPH ") catalogGraphParentAndName (openGraphType | ofGraphType) graphSource?
+    ;
+
+openGraphType
+    = typed? " ANY " (" PROPERTY "? " GRAPH ")?
+    ;
+
+ofGraphType
+    = graphTypeLikeGraph
+    | typed? graphTypeReference
+    | typed? (" PROPERTY "? " GRAPH ")? nestedGraphTypeSpecification
+    ;
+
+graphTypeLikeGraph
+    = " LIKE " graphExpression
+    ;
+
+graphSource
+    = " AS " " COPY " " OF " graphExpression
+    ;
+
+dropGraphStatement
+    = " DROP " " PROPERTY "? " GRAPH " (" IF " " EXISTS ")? catalogGraphParentAndName
+    ;
+
+createGraphTypeStatement
+    = " CREATE " (" PROPERTY "? " GRAPH " " TYPE " (" IF " " NOT " " EXISTS ")? | " OR " " REPLACE " " PROPERTY "? " GRAPH " " TYPE ") catalogGraphTypeParentAndName graphTypeSource
+    ;
+
+graphTypeSource
+    = " AS "? copyOfGraphType
+    | graphTypeLikeGraph
+    | " AS "? nestedGraphTypeSpecification
+    ;
+
+copyOfGraphType
+    = " COPY " " OF " graphTypeReference
+    ;
+
+dropGraphTypeStatement
+    = " DROP " " PROPERTY "? " GRAPH " " TYPE " (" IF " " EXISTS ")? catalogGraphTypeParentAndName
+    ;
+
+callCatalogModifyingProcedureStatement
+    = callProcedureStatement
+    ;
+
+linearDataModifyingStatement
+    = focusedLinearDataModifyingStatement
+    | ambientLinearDataModifyingStatement
+    ;
+
+focusedLinearDataModifyingStatement
+    = focusedLinearDataModifyingStatementBody
+    | focusedNestedDataModifyingProcedureSpecification
+    ;
+
+focusedLinearDataModifyingStatementBody
+    = useGraphClause simpleLinearDataAccessingStatement primitiveResultStatement?
+    ;
+
+focusedNestedDataModifyingProcedureSpecification
+    = useGraphClause nestedDataModifyingProcedureSpecification
+    ;
+
+ambientLinearDataModifyingStatement
+    = ambientLinearDataModifyingStatementBody
+    | nestedDataModifyingProcedureSpecification
+    ;
+
+ambientLinearDataModifyingStatementBody
+    = simpleLinearDataAccessingStatement primitiveResultStatement?
+    ;
+
+simpleLinearDataAccessingStatement
+    = simpleDataAccessingStatement+
+    ;
+
+simpleDataAccessingStatement
+    = simpleQueryStatement
+    | simpleDataModifyingStatement
+    ;
+
+simpleDataModifyingStatement
+    = primitiveDataModifyingStatement
+    | callDataModifyingProcedureStatement
+    ;
+
+primitiveDataModifyingStatement
+    = insertStatement
+    | setStatement
+    | removeStatement
+    | deleteStatement
+    ;
+
+insertStatement
+    = " INSERT " insertGraphPattern
+    ;
+
+setStatement
+    = " SET " setItemList
+    ;
+
+setItemList
+    = setItem ((comma setItem)+)?
+    ;
+
+setItem
+    = setPropertyItem
+    | setAllPropertiesItem
+    | setLabelItem
+    ;
+
+setPropertyItem
+    = bindingVariableReference period propertyName equalsOperator valueExpression
+    ;
+
+setAllPropertiesItem
+    = bindingVariableReference equalsOperator leftBrace propertyKeyValuePairList? rightBrace
+    ;
+
+setLabelItem
+    = bindingVariableReference isOrColon labelName
+    ;
+
+removeStatement
+    = " REMOVE " removeItemList
+    ;
+
+removeItemList
+    = removeItem ((comma removeItem)+)?
+    ;
+
+removeItem
+    = removePropertyItem
+    | removeLabelItem
+    ;
+
+removePropertyItem
+    = bindingVariableReference period propertyName
+    ;
+
+removeLabelItem
+    = bindingVariableReference isOrColon labelName
+    ;
+
+deleteStatement
+    = (" DETACH " | " NODETACH ")? " DELETE " deleteItemList
+    ;
+
+deleteItemList
+    = deleteItem ((comma deleteItem)+)?
+    ;
+
+deleteItem
+    = valueExpression
+    ;
+
+callDataModifyingProcedureStatement
+    = callProcedureStatement
+    ;
+
+compositeQueryStatement
+    = compositeQueryExpression
+    ;
+
+compositeQueryExpression
+    = compositeQueryExpression queryConjunction compositeQueryPrimary
+    | compositeQueryPrimary
+    ;
+
+queryConjunction
+    = setOperator
+    | " OTHERWISE "
+    ;
+
+setOperator
+    = " UNION " setQuantifier?
+    | " EXCEPT " setQuantifier?
+    | " INTERSECT " setQuantifier?
+    ;
+
+compositeQueryPrimary
+    = linearQueryStatement
+    ;
+
+linearQueryStatement
+    = focusedLinearQueryStatement
+    | ambientLinearQueryStatement
+    ;
+
+focusedLinearQueryStatement
+    = focusedLinearQueryStatementPart* focusedLinearQueryAndPrimitiveResultStatementPart
+    | focusedPrimitiveResultStatement
+    | focusedNestedQuerySpecification
+    | selectStatement
+    ;
+
+focusedLinearQueryStatementPart
+    = useGraphClause simpleLinearQueryStatement
+    ;
+
+focusedLinearQueryAndPrimitiveResultStatementPart
+    = useGraphClause simpleLinearQueryStatement primitiveResultStatement
+    ;
+
+focusedPrimitiveResultStatement
+    = useGraphClause primitiveResultStatement
+    ;
+
+focusedNestedQuerySpecification
+    = useGraphClause nestedQuerySpecification
+    ;
+
+ambientLinearQueryStatement
+    = simpleLinearQueryStatement? primitiveResultStatement
+    | nestedQuerySpecification
+    ;
+
+simpleLinearQueryStatement
+    = simpleQueryStatement+
+    ;
+
+simpleQueryStatement
+    = primitiveQueryStatement
+    | callQueryStatement
+    ;
+
+primitiveQueryStatement
+    = matchStatement
+    | letStatement
+    | forStatement
+    | filterStatement
+    | orderByAndPageStatement
+    ;
+
+matchStatement
+    = simpleMatchStatement
+    | optionalMatchStatement
+    ;
+
+simpleMatchStatement
+    = " MATCH " graphPatternBindingTable
+    ;
+
+optionalMatchStatement
+    = " OPTIONAL " optionalOperand
+    ;
+
+optionalOperand
+    = simpleMatchStatement
+    | leftBrace matchStatementBlock rightBrace
+    | leftParen matchStatementBlock rightParen
+    ;
+
+matchStatementBlock
+    = matchStatement+
+    ;
+
+callQueryStatement
+    = callProcedureStatement
+    ;
+
+filterStatement
+    = " FILTER " (whereClause | searchCondition)
+    ;
+
+letStatement
+    = " LET " letVariableDefinitionList
+    ;
+
+letVariableDefinitionList
+    = letVariableDefinition ((comma letVariableDefinition)+)?
+    ;
+
+letVariableDefinition
+    = valueVariableDefinition
+    | bindingVariable equalsOperator valueExpression
+    ;
+
+forStatement
+    = " FOR " forItem forOrdinalityOrOffset?
+    ;
+
+forItem
+    = forItemAlias forItemSource
+    ;
+
+forItemAlias
+    = bindingVariable " IN "
+    ;
+
+forItemSource
+    = listValueExpression
+    | bindingTableReferenceValueExpression
+    ;
+
+forOrdinalityOrOffset
+    = " WITH " (" ORDINALITY " | " OFFSET ") bindingVariable
+    ;
+
+orderByAndPageStatement
+    = orderByClause offsetClause? limitClause?
+    | offsetClause limitClause?
+    | limitClause
+    ;
+
+primitiveResultStatement
+    = returnStatement orderByAndPageStatement?
+    | " FINISH "
+    ;
+
+returnStatement
+    = " RETURN " returnStatementBody
+    ;
+
+returnStatementBody
+    = setQuantifier? (asterisk | returnItemList) groupByClause?
+    | " NO " " BINDINGS "
+    ;
+
+returnItemList
+    = returnItem ((comma returnItem)+)?
+    ;
+
+returnItem
+    = aggregatingValueExpression returnItemAlias?
+    ;
+
+returnItemAlias
+    = " AS " identifier
+    ;
+
+selectStatement
+    = " SELECT " setQuantifier? (asterisk | selectItemList) (selectStatementBody whereClause? groupByClause? havingClause? orderByClause? offsetClause? limitClause?)?
+    ;
+
+selectItemList
+    = selectItem ((comma selectItem)+)?
+    ;
+
+selectItem
+    = aggregatingValueExpression selectItemAlias?
+    ;
+
+selectItemAlias
+    = " AS " identifier
+    ;
+
+havingClause
+    = " HAVING " searchCondition
+    ;
+
+selectStatementBody
+    = " FROM " (selectGraphMatchList | selectQuerySpecification)
+    ;
+
+selectGraphMatchList
+    = selectGraphMatch ((comma selectGraphMatch)+)?
+    ;
+
+selectGraphMatch
+    = graphExpression matchStatement
+    ;
+
+selectQuerySpecification
+    = nestedQuerySpecification
+    | graphExpression nestedQuerySpecification
+    ;
+
+callProcedureStatement
+    = " OPTIONAL "? " CALL " procedureCall
+    ;
+
+procedureCall
+    = inlineProcedureCall
+    | namedProcedureCall
+    ;
+
+inlineProcedureCall
+    = variableScopeClause? nestedProcedureSpecification
+    ;
+
+variableScopeClause
+    = leftParen bindingVariableReferenceList? rightParen
+    ;
+
+bindingVariableReferenceList
+    = bindingVariableReference ((comma bindingVariableReference)+)?
+    ;
+
+namedProcedureCall
+    = procedureReference leftParen procedureArgumentList? rightParen yieldClause?
+    ;
+
+procedureArgumentList
+    = procedureArgument ((comma procedureArgument)+)?
+    ;
+
+procedureArgument
+    = valueExpression
+    ;
+
+atSchemaClause
+    = " AT " schemaReference
+    ;
+
+useGraphClause
+    = " USE " graphExpression
+    ;
+
+graphPatternBindingTable
+    = graphPattern graphPatternYieldClause?
+    ;
+
+graphPatternYieldClause
+    = " YIELD " graphPatternYieldItemList
+    ;
+
+graphPatternYieldItemList
+    = graphPatternYieldItem ((comma graphPatternYieldItem)+)?
+    | " NO " " BINDINGS "
+    ;
+
+graphPatternYieldItem
+    = elementVariableReference
+    | pathVariableReference
+    ;
+
+graphPattern
+    = matchMode? pathPatternList keepClause? graphPatternWhereClause?
+    ;
+
+matchMode
+    = repeatableElementsMatchMode
+    | differentEdgesMatchMode
+    ;
+
+repeatableElementsMatchMode
+    = " REPEATABLE " elementBindingsOrElements
+    ;
+
+differentEdgesMatchMode
+    = " DIFFERENT " edgeBindingsOrEdges
+    ;
+
+elementBindingsOrElements
+    = " ELEMENT " " BINDINGS "?
+    | " ELEMENTS "
+    ;
+
+edgeBindingsOrEdges
+    = edgeSynonym " BINDINGS "?
+    | edgesSynonym
+    ;
+
+pathPatternList
+    = pathPattern ((comma pathPattern)+)?
+    ;
+
+pathPattern
+    = pathVariableDeclaration? pathPatternPrefix? pathPatternExpression
+    ;
+
+pathVariableDeclaration
+    = pathVariable equalsOperator
+    ;
+
+keepClause
+    = " KEEP " pathPatternPrefix
+    ;
+
+graphPatternWhereClause
+    = " WHERE " searchCondition
+    ;
+
+insertGraphPattern
+    = insertPathPatternList
+    ;
+
+insertPathPatternList
+    = insertPathPattern ((comma insertPathPattern)+)?
+    ;
+
+insertPathPattern
+    = insertNodePattern ((insertEdgePattern insertNodePattern)+)?
+    ;
+
+insertNodePattern
+    = leftParen insertElementPatternFiller? rightParen
+    ;
+
+insertEdgePattern
+    = insertEdgePointingLeft
+    | insertEdgePointingRight
+    | insertEdgeUndirected
+    ;
+
+insertEdgePointingLeft
+    = leftArrowBracket insertElementPatternFiller? rightBracketMinus
+    ;
+
+insertEdgePointingRight
+    = minusLeftBracket insertElementPatternFiller? bracketRightArrow
+    ;
+
+insertEdgeUndirected
+    = tildeLeftBracket insertElementPatternFiller? rightBracketTilde
+    ;
+
+insertElementPatternFiller
+    = elementVariableDeclaration labelAndPropertySetSpecification?
+    | elementVariableDeclaration? labelAndPropertySetSpecification
+    ;
+
+labelAndPropertySetSpecification
+    = isOrColon labelSetSpecification elementPropertySpecification?
+    | (isOrColon labelSetSpecification)? elementPropertySpecification
+    ;
+
+pathPatternPrefix
+    = pathModePrefix
+    | pathSearchPrefix
+    ;
+
+pathModePrefix
+    = pathMode pathOrPaths?
+    ;
+
+pathMode
+    = " WALK "
+    | " TRAIL "
+    | " SIMPLE "
+    | " ACYCLIC "
+    ;
+
+pathSearchPrefix
+    = allPathSearch
+    | anyPathSearch
+    | shortestPathSearch
+    ;
+
+allPathSearch
+    = " ALL " pathMode? pathOrPaths?
+    ;
+
+pathOrPaths
+    = " PATH "
+    | " PATHS "
+    ;
+
+anyPathSearch
+    = " ANY " numberOfPaths? pathMode? pathOrPaths?
+    ;
+
+numberOfPaths
+    = nonNegativeIntegerSpecification
+    ;
+
+shortestPathSearch
+    = allShortestPathSearch
+    | anyShortestPathSearch
+    | countedShortestPathSearch
+    | countedShortestGroupSearch
+    ;
+
+allShortestPathSearch
+    = " ALL " " SHORTEST " pathMode? pathOrPaths?
+    ;
+
+anyShortestPathSearch
+    = " ANY " " SHORTEST " pathMode? pathOrPaths?
+    ;
+
+countedShortestPathSearch
+    = " SHORTEST " numberOfPaths pathMode? pathOrPaths?
+    ;
+
+countedShortestGroupSearch
+    = " SHORTEST " numberOfGroups? pathMode? pathOrPaths? (" GROUP " | " GROUPS ")
+    ;
+
+numberOfGroups
+    = nonNegativeIntegerSpecification
+    ;
+
+pathPatternExpression
+    = pathTerm
+    | pathMultisetAlternation
+    | pathPatternUnion
+    ;
+
+pathMultisetAlternation
+    = pathTerm multisetAlternationOperator pathTerm ((multisetAlternationOperator pathTerm)+)?
+    ;
+
+pathPatternUnion
+    = pathTerm verticalBar pathTerm ((verticalBar pathTerm)+)?
+    ;
+
+pathTerm
+    = pathFactor
+    | pathConcatenation
+    ;
+
+pathConcatenation
+    = pathTerm pathFactor
+    ;
+
+pathFactor
+    = pathPrimary
+    | quantifiedPathPrimary
+    | questionedPathPrimary
+    ;
+
+quantifiedPathPrimary
+    = pathPrimary graphPatternQuantifier
+    ;
+
+questionedPathPrimary
+    = pathPrimary questionMark
+    ;
+
+pathPrimary
+    = elementPattern
+    | parenthesizedPathPatternExpression
+    | simplifiedPathPatternExpression
+    ;
+
+elementPattern
+    = nodePattern
+    | edgePattern
+    ;
+
+nodePattern
+    = leftParen elementPatternFiller rightParen
+    ;
+
+elementPatternFiller
+    = elementVariableDeclaration? isLabelExpression? elementPatternPredicate?
+    ;
+
+elementVariableDeclaration
+    = " TEMP "? elementVariable
+    ;
+
+isLabelExpression
+    = isOrColon labelExpression
+    ;
+
+isOrColon
+    = " IS "
+    | colon
+    ;
+
+elementPatternPredicate
+    = elementPatternWhereClause
+    | elementPropertySpecification
+    ;
+
+elementPatternWhereClause
+    = " WHERE " searchCondition
+    ;
+
+elementPropertySpecification
+    = leftBrace propertyKeyValuePairList rightBrace
+    ;
+
+propertyKeyValuePairList
+    = propertyKeyValuePair ((comma propertyKeyValuePair)+)?
+    ;
+
+propertyKeyValuePair
+    = propertyName colon valueExpression
+    ;
+
+edgePattern
+    = fullEdgePattern
+    | abbreviatedEdgePattern
+    ;
+
+fullEdgePattern
+    = fullEdgePointingLeft
+    | fullEdgeUndirected
+    | fullEdgePointingRight
+    | fullEdgeLeftOrUndirected
+    | fullEdgeUndirectedOrRight
+    | fullEdgeLeftOrRight
+    | fullEdgeAnyDirection
+    ;
+
+fullEdgePointingLeft
+    = leftArrowBracket elementPatternFiller rightBracketMinus
+    ;
+
+fullEdgeUndirected
+    = tildeLeftBracket elementPatternFiller rightBracketTilde
+    ;
+
+fullEdgePointingRight
+    = minusLeftBracket elementPatternFiller bracketRightArrow
+    ;
+
+fullEdgeLeftOrUndirected
+    = leftArrowTildeBracket elementPatternFiller rightBracketTilde
+    ;
+
+fullEdgeUndirectedOrRight
+    = tildeLeftBracket elementPatternFiller bracketTildeRightArrow
+    ;
+
+fullEdgeLeftOrRight
+    = leftArrowBracket elementPatternFiller bracketRightArrow
+    ;
+
+fullEdgeAnyDirection
+    = minusLeftBracket elementPatternFiller rightBracketMinus
+    ;
+
+abbreviatedEdgePattern
+    = leftArrow
+    | tilde
+    | rightArrow
+    | leftArrowTilde
+    | tildeRightArrow
+    | leftMinusRight
+    | minusSign
+    ;
+
+parenthesizedPathPatternExpression
+    = leftParen subpathVariableDeclaration? pathModePrefix? pathPatternExpression parenthesizedPathPatternWhereClause? rightParen
+    ;
+
+subpathVariableDeclaration
+    = subpathVariable equalsOperator
+    ;
+
+parenthesizedPathPatternWhereClause
+    = " WHERE " searchCondition
+    ;
+
+labelExpression
+    = labelTerm
+    | labelDisjunction
+    ;
+
+labelDisjunction
+    = labelExpression verticalBar labelTerm
+    ;
+
+labelTerm
+    = labelFactor
+    | labelConjunction
+    ;
+
+labelConjunction
+    = labelTerm ampersand labelFactor
+    ;
+
+labelFactor
+    = labelPrimary
+    | labelNegation
+    ;
+
+labelNegation
+    = exclamationMark labelPrimary
+    ;
+
+labelPrimary
+    = labelName
+    | wildcardLabel
+    | parenthesizedLabelExpression
+    ;
+
+wildcardLabel
+    = percent
+    ;
+
+parenthesizedLabelExpression
+    = leftParen labelExpression rightParen
+    ;
+
+pathVariableReference
+    = bindingVariableReference
+    ;
+
+elementVariableReference
+    = bindingVariableReference
+    ;
+
+graphPatternQuantifier
+    = asterisk
+    | plusSign
+    | fixedQuantifier
+    | generalQuantifier
+    ;
+
+fixedQuantifier
+    = leftBrace unsignedInteger rightBrace
+    ;
+
+generalQuantifier
+    = leftBrace lowerBound? comma upperBound? rightBrace
+    ;
+
+lowerBound
+    = unsignedInteger
+    ;
+
+upperBound
+    = unsignedInteger
+    ;
+
+simplifiedPathPatternExpression
+    = simplifiedDefaultingLeft
+    | simplifiedDefaultingUndirected
+    | simplifiedDefaultingRight
+    | simplifiedDefaultingLeftOrUndirected
+    | simplifiedDefaultingUndirectedOrRight
+    | simplifiedDefaultingLeftOrRight
+    | simplifiedDefaultingAnyDirection
+    ;
+
+simplifiedDefaultingLeft
+    = leftMinusSlash simplifiedContents slashMinus
+    ;
+
+simplifiedDefaultingUndirected
+    = tildeSlash simplifiedContents slashTilde
+    ;
+
+simplifiedDefaultingRight
+    = minusSlash simplifiedContents slashMinusRight
+    ;
+
+simplifiedDefaultingLeftOrUndirected
+    = leftTildeSlash simplifiedContents slashTilde
+    ;
+
+simplifiedDefaultingUndirectedOrRight
+    = tildeSlash simplifiedContents slashTildeRight
+    ;
+
+simplifiedDefaultingLeftOrRight
+    = leftMinusSlash simplifiedContents slashMinusRight
+    ;
+
+simplifiedDefaultingAnyDirection
+    = minusSlash simplifiedContents slashMinus
+    ;
+
+simplifiedContents
+    = simplifiedTerm
+    | simplifiedPathUnion
+    | simplifiedMultisetAlternation
+    ;
+
+simplifiedPathUnion
+    = simplifiedTerm verticalBar simplifiedTerm ((verticalBar simplifiedTerm)+)?
+    ;
+
+simplifiedMultisetAlternation
+    = simplifiedTerm multisetAlternationOperator simplifiedTerm ((multisetAlternationOperator simplifiedTerm)+)?
+    ;
+
+simplifiedTerm
+    = simplifiedFactorLow
+    | simplifiedConcatenation
+    ;
+
+simplifiedConcatenation
+    = simplifiedTerm simplifiedFactorLow
+    ;
+
+simplifiedFactorLow
+    = simplifiedFactorHigh
+    | simplifiedConjunction
+    ;
+
+simplifiedConjunction
+    = simplifiedFactorLow ampersand simplifiedFactorHigh
+    ;
+
+simplifiedFactorHigh
+    = simplifiedTertiary
+    | simplifiedQuantified
+    | simplifiedQuestioned
+    ;
+
+simplifiedQuantified
+    = simplifiedTertiary graphPatternQuantifier
+    ;
+
+simplifiedQuestioned
+    = simplifiedTertiary questionMark
+    ;
+
+simplifiedTertiary
+    = simplifiedDirectionOverride
+    | simplifiedSecondary
+    ;
+
+simplifiedDirectionOverride
+    = simplifiedOverrideLeft
+    | simplifiedOverrideUndirected
+    | simplifiedOverrideRight
+    | simplifiedOverrideLeftOrUndirected
+    | simplifiedOverrideUndirectedOrRight
+    | simplifiedOverrideLeftOrRight
+    | simplifiedOverrideAnyDirection
+    ;
+
+simplifiedOverrideLeft
+    = leftAngleBracket simplifiedSecondary
+    ;
+
+simplifiedOverrideUndirected
+    = tilde simplifiedSecondary
+    ;
+
+simplifiedOverrideRight
+    = simplifiedSecondary rightAngleBracket
+    ;
+
+simplifiedOverrideLeftOrUndirected
+    = leftArrowTilde simplifiedSecondary
+    ;
+
+simplifiedOverrideUndirectedOrRight
+    = tilde simplifiedSecondary rightAngleBracket
+    ;
+
+simplifiedOverrideLeftOrRight
+    = leftAngleBracket simplifiedSecondary rightAngleBracket
+    ;
+
+simplifiedOverrideAnyDirection
+    = minusSign simplifiedSecondary
+    ;
+
+simplifiedSecondary
+    = simplifiedPrimary
+    | simplifiedNegation
+    ;
+
+simplifiedNegation
+    = exclamationMark simplifiedPrimary
+    ;
+
+simplifiedPrimary
+    = labelName
+    | leftParen simplifiedContents rightParen
+    ;
+
+whereClause
+    = " WHERE " searchCondition
+    ;
+
+yieldClause
+    = " YIELD " yieldItemList
+    ;
+
+yieldItemList
+    = yieldItem ((comma yieldItem)+)?
+    ;
+
+yieldItem
+    = (yieldItemName yieldItemAlias?)
+    ;
+
+yieldItemName
+    = fieldName
+    ;
+
+yieldItemAlias
+    = " AS " bindingVariable
+    ;
+
+groupByClause
+    = " GROUP " " BY " groupingElementList
+    ;
+
+groupingElementList
+    = groupingElement ((comma groupingElement)+)?
+    | emptyGroupingSet
+    ;
+
+groupingElement
+    = bindingVariableReference
+    ;
+
+emptyGroupingSet
+    = leftParen rightParen
+    ;
+
+orderByClause
+    = " ORDER " " BY " sortSpecificationList
+    ;
+
+sortSpecificationList
+    = sortSpecification ((comma sortSpecification)+)?
+    ;
+
+sortSpecification
+    = sortKey orderingSpecification? nullOrdering?
+    ;
+
+sortKey
+    = aggregatingValueExpression
+    ;
+
+orderingSpecification
+    = " ASC "
+    | " ASCENDING "
+    | " DESC "
+    | " DESCENDING "
+    ;
+
+nullOrdering
+    = " NULLS " " FIRST "
+    | " NULLS " " LAST "
+    ;
+
+limitClause
+    = " LIMIT " nonNegativeIntegerSpecification
+    ;
+
+offsetClause
+    = offsetSynonym nonNegativeIntegerSpecification
+    ;
+
+offsetSynonym
+    = " OFFSET "
+    | " SKIP "
+    ;
+
+schemaReference
+    = absoluteCatalogSchemaReference
+    | relativeCatalogSchemaReference
+    | referenceParameterSpecification
+    ;
+
+absoluteCatalogSchemaReference
+    = solidus
+    | absoluteDirectoryPath schemaName
+    ;
+
+catalogSchemaParentAndName
+    = absoluteDirectoryPath schemaName
+    ;
+
+relativeCatalogSchemaReference
+    = predefinedSchemaReference
+    | relativeDirectoryPath schemaName
+    ;
+
+predefinedSchemaReference
+    = " HOME_SCHEMA "
+    | " CURRENT_SCHEMA "
+    | period
+    ;
+
+absoluteDirectoryPath
+    = solidus simpleDirectoryPath?
+    ;
+
+relativeDirectoryPath
+    = doublePeriod ((solidus doublePeriod)+ solidus simpleDirectoryPath?)?
+    ;
+
+simpleDirectoryPath
+    = (directoryName solidus)+
+    ;
+
+graphReference
+    = catalogObjectParentReference graphName
+    | delimitedGraphName
+    | homeGraph
+    | referenceParameterSpecification
+    ;
+
+catalogGraphParentAndName
+    = catalogObjectParentReference? graphName
+    ;
+
+homeGraph
+    = " HOME_PROPERTY_GRAPH "
+    | " HOME_GRAPH "
+    ;
+
+graphTypeReference
+    = catalogGraphTypeParentAndName
+    | referenceParameterSpecification
+    ;
+
+catalogGraphTypeParentAndName
+    = catalogObjectParentReference? graphTypeName
+    ;
+
+bindingTableReference
+    = catalogObjectParentReference bindingTableName
+    | delimitedBindingTableName
+    | referenceParameterSpecification
+    ;
+
+procedureReference
+    = catalogProcedureParentAndName
+    | referenceParameterSpecification
+    ;
+
+catalogProcedureParentAndName
+    = catalogObjectParentReference? procedureName
+    ;
+
+catalogObjectParentReference
+    = schemaReference solidus? ((objectName period)+)?
+    | (objectName period)+
+    ;
+
+referenceParameterSpecification
+    = substitutedParameterReference
+    ;
+
+nestedGraphTypeSpecification
+    = leftBrace graphTypeSpecificationBody rightBrace
+    ;
+
+graphTypeSpecificationBody
+    = elementTypeList
+    ;
+
+elementTypeList
+    = elementTypeSpecification ((comma elementTypeSpecification)+)?
+    ;
+
+elementTypeSpecification
+    = nodeTypeSpecification
+    | edgeTypeSpecification
+    ;
+
+nodeTypeSpecification
+    = nodeTypePattern
+    | nodeTypePhrase
+    ;
+
+nodeTypePattern
+    = (nodeSynonym " TYPE "? nodeTypeName)? leftParen localNodeTypeAlias? nodeTypeFiller? rightParen
+    ;
+
+nodeTypePhrase
+    = nodeSynonym " TYPE "? nodeTypePhraseFiller (" AS " localNodeTypeAlias)?
+    ;
+
+nodeTypePhraseFiller
+    = nodeTypeName nodeTypeFiller?
+    | nodeTypeFiller
+    ;
+
+nodeTypeFiller
+    = nodeTypeKeyLabelSet nodeTypeImpliedContent?
+    | nodeTypeImpliedContent
+    ;
+
+localNodeTypeAlias
+    = regularIdentifier
+    ;
+
+nodeTypeImpliedContent
+    = nodeTypeLabelSet
+    | nodeTypePropertyTypes
+    | nodeTypeLabelSet nodeTypePropertyTypes
+    ;
+
+nodeTypeKeyLabelSet
+    = labelSetPhrase? implies
+    ;
+
+nodeTypeLabelSet
+    = labelSetPhrase
+    ;
+
+nodeTypePropertyTypes
+    = propertyTypesSpecification
+    ;
+
+edgeTypeSpecification
+    = edgeTypePattern
+    | edgeTypePhrase
+    ;
+
+edgeTypePattern
+    = (edgeKind? edgeSynonym " TYPE "? edgeTypeName)? (edgeTypePatternDirected | edgeTypePatternUndirected)
+    ;
+
+edgeTypePhrase
+    = edgeKind edgeSynonym " TYPE "? edgeTypePhraseFiller endpointPairPhrase
+    ;
+
+edgeTypePhraseFiller
+    = edgeTypeName edgeTypeFiller?
+    | edgeTypeFiller
+    ;
+
+edgeTypeFiller
+    = edgeTypeKeyLabelSet edgeTypeImpliedContent?
+    | edgeTypeImpliedContent
+    ;
+
+edgeTypeImpliedContent
+    = edgeTypeLabelSet
+    | edgeTypePropertyTypes
+    | edgeTypeLabelSet edgeTypePropertyTypes
+    ;
+
+edgeTypeKeyLabelSet
+    = labelSetPhrase? implies
+    ;
+
+edgeTypeLabelSet
+    = labelSetPhrase
+    ;
+
+edgeTypePropertyTypes
+    = propertyTypesSpecification
+    ;
+
+edgeTypePatternDirected
+    = edgeTypePatternPointingRight
+    | edgeTypePatternPointingLeft
+    ;
+
+edgeTypePatternPointingRight
+    = sourceNodeTypeReference arcTypePointingRight destinationNodeTypeReference
+    ;
+
+edgeTypePatternPointingLeft
+    = destinationNodeTypeReference arcTypePointingLeft sourceNodeTypeReference
+    ;
+
+edgeTypePatternUndirected
+    = sourceNodeTypeReference arcTypeUndirected destinationNodeTypeReference
+    ;
+
+arcTypePointingRight
+    = minusLeftBracket edgeTypeFiller bracketRightArrow
+    ;
+
+arcTypePointingLeft
+    = leftArrowBracket edgeTypeFiller rightBracketMinus
+    ;
+
+arcTypeUndirected
+    = tildeLeftBracket edgeTypeFiller rightBracketTilde
+    ;
+
+sourceNodeTypeReference
+    = leftParen sourceNodeTypeAlias rightParen
+    | leftParen nodeTypeFiller? rightParen
+    ;
+
+destinationNodeTypeReference
+    = leftParen destinationNodeTypeAlias rightParen
+    | leftParen nodeTypeFiller? rightParen
+    ;
+
+edgeKind
+    = " DIRECTED "
+    | " UNDIRECTED "
+    ;
+
+endpointPairPhrase
+    = " CONNECTING " endpointPair
+    ;
+
+endpointPair
+    = endpointPairDirected
+    | endpointPairUndirected
+    ;
+
+endpointPairDirected
+    = endpointPairPointingRight
+    | endpointPairPointingLeft
+    ;
+
+endpointPairPointingRight
+    = leftParen sourceNodeTypeAlias connectorPointingRight destinationNodeTypeAlias rightParen
+    ;
+
+endpointPairPointingLeft
+    = leftParen destinationNodeTypeAlias leftArrow sourceNodeTypeAlias rightParen
+    ;
+
+endpointPairUndirected
+    = leftParen sourceNodeTypeAlias connectorUndirected destinationNodeTypeAlias rightParen
+    ;
+
+connectorPointingRight
+    = " TO "
+    | rightArrow
+    ;
+
+connectorUndirected
+    = " TO "
+    | tilde
+    ;
+
+sourceNodeTypeAlias
+    = regularIdentifier
+    ;
+
+destinationNodeTypeAlias
+    = regularIdentifier
+    ;
+
+labelSetPhrase
+    = " LABEL " labelName
+    | " LABELS " labelSetSpecification
+    | isOrColon labelSetSpecification
+    ;
+
+labelSetSpecification
+    = labelName ((ampersand labelName)+)?
+    ;
+
+propertyTypesSpecification
+    = leftBrace propertyTypeList? rightBrace
+    ;
+
+propertyTypeList
+    = propertyType ((comma propertyType)+)?
+    ;
+
+propertyType
+    = propertyName typed? propertyValueType
+    ;
+
+propertyValueType
+    = valueType
+    ;
+
+bindingTableType
+    = " BINDING "? " TABLE " fieldTypesSpecification
+    ;
+
+valueType
+    = predefinedType
+    | constructedValueType
+    | dynamicUnionType
+    ;
+
+typed
+    = doubleColon
+    | " TYPED "
+    ;
+
+predefinedType
+    = booleanType
+    | characterStringType
+    | byteStringType
+    | numericType
+    | temporalType
+    | referenceValueType
+    | immaterialValueType
+    ;
+
+booleanType
+    = (" BOOL " | " BOOLEAN ") notNull?
+    ;
+
+characterStringType
+    = " STRING " (leftParen (minLength comma)? maxLength rightParen)? notNull?
+    | " CHAR " (leftParen fixedLength rightParen)? notNull?
+    | " VARCHAR " (leftParen maxLength rightParen)? notNull?
+    ;
+
+byteStringType
+    = " BYTES " (leftParen (minLength comma)? maxLength rightParen)? notNull?
+    | " BINARY " (leftParen fixedLength rightParen)? notNull?
+    | " VARBINARY " (leftParen maxLength rightParen)? notNull?
+    ;
+
+minLength
+    = unsignedInteger
+    ;
+
+maxLength
+    = unsignedInteger
+    ;
+
+fixedLength
+    = unsignedInteger
+    ;
+
+numericType
+    = exactNumericType
+    | approximateNumericType
+    ;
+
+exactNumericType
+    = binaryExactNumericType
+    | decimalExactNumericType
+    ;
+
+binaryExactNumericType
+    = signedBinaryExactNumericType
+    | unsignedBinaryExactNumericType
+    ;
+
+signedBinaryExactNumericType
+    = " INT8 " notNull?
+    | " INT16 " notNull?
+    | " INT32 " notNull?
+    | " INT64 " notNull?
+    | " INT128 " notNull?
+    | " INT256 " notNull?
+    | " SMALLINT " notNull?
+    | " INT " (leftParen precision rightParen)? notNull?
+    | " BIGINT " notNull?
+    | " SIGNED "? verboseBinaryExactNumericType
+    ;
+
+unsignedBinaryExactNumericType
+    = " UINT8 " notNull?
+    | " UINT16 " notNull?
+    | " UINT32 " notNull?
+    | " UINT64 " notNull?
+    | " UINT128 " notNull?
+    | " UINT256 " notNull?
+    | " USMALLINT " notNull?
+    | " UINT " (leftParen precision rightParen)? notNull?
+    | " UBIGINT " notNull?
+    | " UNSIGNED " verboseBinaryExactNumericType
+    ;
+
+verboseBinaryExactNumericType
+    = " INTEGER8 " notNull?
+    | " INTEGER16 " notNull?
+    | " INTEGER32 " notNull?
+    | " INTEGER64 " notNull?
+    | " INTEGER128 " notNull?
+    | " INTEGER256 " notNull?
+    | " SMALL " " INTEGER " notNull?
+    | " INTEGER " (leftParen precision rightParen)? notNull?
+    | " BIG " " INTEGER " notNull?
+    ;
+
+decimalExactNumericType
+    = (" DECIMAL " | " DEC ") (leftParen precision (comma scale)? rightParen notNull?)?
+    ;
+
+precision
+    = unsignedDecimalInteger
+    ;
+
+scale
+    = unsignedDecimalInteger
+    ;
+
+approximateNumericType
+    = " FLOAT16 " notNull?
+    | " FLOAT32 " notNull?
+    | " FLOAT64 " notNull?
+    | " FLOAT128 " notNull?
+    | " FLOAT256 " notNull?
+    | " FLOAT " (leftParen precision (comma scale)? rightParen)? notNull?
+    | " REAL " notNull?
+    | " DOUBLE " " PRECISION "? notNull?
+    ;
+
+temporalType
+    = temporalInstantType
+    | temporalDurationType
+    ;
+
+temporalInstantType
+    = datetimeType
+    | localdatetimeType
+    | dateType
+    | timeType
+    | localtimeType
+    ;
+
+datetimeType
+    = " ZONED " " DATETIME " notNull?
+    | " TIMESTAMP " " WITH " " TIME " " ZONE " notNull?
+    ;
+
+localdatetimeType
+    = " LOCAL " " DATETIME " notNull?
+    | " TIMESTAMP " (" WITHOUT " " TIME " " ZONE ")? notNull?
+    ;
+
+dateType
+    = " DATE " notNull?
+    ;
+
+timeType
+    = " ZONED " " TIME " notNull?
+    | " TIME " " WITH " " TIME " " ZONE " notNull?
+    ;
+
+localtimeType
+    = " LOCAL " " TIME " notNull?
+    | " TIME " " WITHOUT " " TIME " " ZONE " notNull?
+    ;
+
+temporalDurationType
+    = " DURATION " leftParen temporalDurationQualifier rightParen notNull?
+    ;
+
+temporalDurationQualifier
+    = " YEAR " " TO " " MONTH "
+    | " DAY " " TO " " SECOND "
+    ;
+
+referenceValueType
+    = graphReferenceValueType
+    | bindingTableReferenceValueType
+    | nodeReferenceValueType
+    | edgeReferenceValueType
+    ;
+
+immaterialValueType
+    = nullType
+    | emptyType
+    ;
+
+nullType
+    = " NULL "
+    ;
+
+emptyType
+    = " NULL " notNull
+    | " NOTHING "
+    ;
+
+graphReferenceValueType
+    = openGraphReferenceValueType
+    | closedGraphReferenceValueType
+    ;
+
+closedGraphReferenceValueType
+    = " PROPERTY "? " GRAPH " nestedGraphTypeSpecification notNull?
+    ;
+
+openGraphReferenceValueType
+    = " ANY " " PROPERTY "? " GRAPH " notNull?
+    ;
+
+bindingTableReferenceValueType
+    = bindingTableType notNull?
+    ;
+
+nodeReferenceValueType
+    = openNodeReferenceValueType
+    | closedNodeReferenceValueType
+    ;
+
+closedNodeReferenceValueType
+    = nodeTypeSpecification notNull?
+    ;
+
+openNodeReferenceValueType
+    = " ANY "? nodeSynonym notNull?
+    ;
+
+edgeReferenceValueType
+    = openEdgeReferenceValueType
+    | closedEdgeReferenceValueType
+    ;
+
+closedEdgeReferenceValueType
+    = edgeTypeSpecification notNull?
+    ;
+
+openEdgeReferenceValueType
+    = " ANY "? edgeSynonym notNull?
+    ;
+
+constructedValueType
+    = pathValueType
+    | listValueType
+    | recordType
+    ;
+
+pathValueType
+    = " PATH " notNull?
+    ;
+
+listValueType
+    = (listValueTypeName leftAngleBracket valueType rightAngleBracket | valueType? listValueTypeName) (leftBracket maxLength rightBracket)? notNull?
+    ;
+
+listValueTypeName
+    = " GROUP "? listValueTypeNameSynonym
+    ;
+
+listValueTypeNameSynonym
+    = " LIST "
+    | " ARRAY "
+    ;
+
+recordType
+    = " ANY "? " RECORD " notNull?
+    | " RECORD "? fieldTypesSpecification notNull?
+    ;
+
+fieldTypesSpecification
+    = leftBrace fieldTypeList? rightBrace
+    ;
+
+fieldTypeList
+    = fieldType ((comma fieldType)+)?
+    ;
+
+dynamicUnionType
+    = openDynamicUnionType
+    | dynamicPropertyValueType
+    | closedDynamicUnionType
+    ;
+
+openDynamicUnionType
+    = " ANY " " VALUE "? notNull?
+    ;
+
+dynamicPropertyValueType
+    = " ANY "? " PROPERTY " " VALUE " notNull?
+    ;
+
+closedDynamicUnionType
+    = " ANY " " VALUE "? leftAngleBracket componentTypeList rightAngleBracket
+    | componentTypeList
+    ;
+
+componentTypeList
+    = componentType ((verticalBar componentType)+)?
+    ;
+
+componentType
+    = valueType
+    ;
+
+notNull
+    = "  NOT " " NULL "
+    ;
+
+fieldType
+    = fieldName typed? valueType
+    ;
+
+searchCondition
+    = booleanValueExpression
+    ;
+
+predicate
+    = comparisonPredicate
+    | existsPredicate
+    | nullPredicate
+    | normalizedPredicate
+    | valueTypePredicate
+    | directedPredicate
+    | labeledPredicate
+    | sourceDestinationPredicate
+    | all_differentPredicate
+    | samePredicate
+    | property_existsPredicate
+    ;
+
+comparisonPredicate
+    = comparisonPredicand comparisonPredicatePart2
+    ;
+
+comparisonPredicatePart2
+    = compOp comparisonPredicand
+    ;
+
+compOp
+    = equalsOperator
+    | notEqualsOperator
+    | lessThanOperator
+    | greaterThanOperator
+    | lessThanOrEqualsOperator
+    | greaterThanOrEqualsOperator
+    ;
+
+comparisonPredicand
+    = commonValueExpression
+    | booleanPredicand
+    ;
+
+existsPredicate
+    = " EXISTS " (leftBrace graphPattern rightBrace | leftParen graphPattern rightParen | leftBrace matchStatementBlock rightBrace | leftParen matchStatementBlock rightParen | nestedQuerySpecification)
+    ;
+
+nullPredicate
+    = valueExpressionPrimary nullPredicatePart2
+    ;
+
+nullPredicatePart2
+    = " IS " " NOT "? " NULL "
+    ;
+
+valueTypePredicate
+    = valueExpressionPrimary valueTypePredicatePart2
+    ;
+
+valueTypePredicatePart2
+    = " IS " " NOT "? typed valueType
+    ;
+
+normalizedPredicate
+    = stringValueExpression normalizedPredicatePart2
+    ;
+
+normalizedPredicatePart2
+    = " IS " " NOT "? normalForm? " NORMALIZED "
+    ;
+
+directedPredicate
+    = elementVariableReference directedPredicatePart2
+    ;
+
+directedPredicatePart2
+    = " IS " " NOT "? " DIRECTED "
+    ;
+
+labeledPredicate
+    = elementVariableReference labeledPredicatePart2
+    ;
+
+labeledPredicatePart2
+    = isLabeledOrColon labelExpression
+    ;
+
+isLabeledOrColon
+    = " IS " " NOT "? " LABELED "
+    | colon
+    ;
+
+sourceDestinationPredicate
+    = nodeReference sourcePredicatePart2
+    | nodeReference destinationPredicatePart2
+    ;
+
+nodeReference
+    = elementVariableReference
+    ;
+
+sourcePredicatePart2
+    = " IS " " NOT "? " SOURCE " " OF " edgeReference
+    ;
+
+destinationPredicatePart2
+    = " IS " " NOT "? " DESTINATION " " OF " edgeReference
+    ;
+
+edgeReference
+    = elementVariableReference
+    ;
+
+all_differentPredicate
+    = " ALL_DIFFERENT " leftParen elementVariableReference comma elementVariableReference ((comma elementVariableReference)+)? rightParen
+    ;
+
+samePredicate
+    = " SAME " leftParen elementVariableReference comma elementVariableReference ((comma elementVariableReference)+)? rightParen
+    ;
+
+property_existsPredicate
+    = " PROPERTY_EXISTS " leftParen elementVariableReference comma propertyName rightParen
+    ;
+
+valueExpression
+    = commonValueExpression
+    | booleanValueExpression
+    ;
+
+commonValueExpression
+    = numericValueExpression
+    | stringValueExpression
+    | datetimeValueExpression
+    | durationValueExpression
+    | listValueExpression
+    | recordExpression
+    | pathValueExpression
+    | referenceValueExpression
+    ;
+
+referenceValueExpression
+    = graphReferenceValueExpression
+    | bindingTableReferenceValueExpression
+    | nodeReferenceValueExpression
+    | edgeReferenceValueExpression
+    ;
+
+graphReferenceValueExpression
+    = " PROPERTY "? " GRAPH " graphExpression
+    | valueExpressionPrimary
+    ;
+
+bindingTableReferenceValueExpression
+    = " BINDING "? " TABLE " bindingTableExpression
+    | valueExpressionPrimary
+    ;
+
+nodeReferenceValueExpression
+    = valueExpressionPrimary
+    ;
+
+edgeReferenceValueExpression
+    = valueExpressionPrimary
+    ;
+
+recordExpression
+    = valueExpressionPrimary
+    ;
+
+aggregatingValueExpression
+    = valueExpression
+    ;
+
+valueExpressionPrimary
+    = parenthesizedValueExpression
+    | nonParenthesizedValueExpressionPrimary
+    ;
+
+parenthesizedValueExpression
+    = leftParen valueExpression rightParen
+    ;
+
+nonParenthesizedValueExpressionPrimary
+    = nonParenthesizedValueExpressionPrimarySpecialCase
+    | bindingVariableReference
+    ;
+
+nonParenthesizedValueExpressionPrimarySpecialCase
+    = aggregateFunction
+    | unsignedValueSpecification
+    | listValueConstructor
+    | recordConstructor
+    | pathValueConstructor
+    | propertyReference
+    | valueQueryExpression
+    | caseExpression
+    | castSpecification
+    | element_idFunction
+    | letValueExpression
+    ;
+
+unsignedValueSpecification
+    = unsignedLiteral
+    | generalValueSpecification
+    ;
+
+nonNegativeIntegerSpecification
+    = unsignedInteger
+    | dynamicParameterSpecification
+    ;
+
+generalValueSpecification
+    = dynamicParameterSpecification
+    | " SESSION_USER "
+    ;
+
+dynamicParameterSpecification
+    = generalParameterReference
+    ;
+
+letValueExpression
+    = " LET " letVariableDefinitionList " IN " valueExpression " END "
+    ;
+
+valueQueryExpression
+    = " VALUE " nestedQuerySpecification
+    ;
+
+caseExpression
+    = caseAbbreviation
+    | caseSpecification
+    ;
+
+caseAbbreviation
+    = " NULLIF " leftParen valueExpression comma valueExpression rightParen
+    | " COALESCE " leftParen valueExpression (comma valueExpression)+ rightParen
+    ;
+
+caseSpecification
+    = simpleCase
+    | searchedCase
+    ;
+
+simpleCase
+    = " CASE " caseOperand simpleWhenClause+ elseClause? " END "
+    ;
+
+searchedCase
+    = " CASE " searchedWhenClause+ elseClause? " END "
+    ;
+
+simpleWhenClause
+    = " WHEN " whenOperandList " THEN " result
+    ;
+
+searchedWhenClause
+    = " WHEN " searchCondition " THEN " result
+    ;
+
+elseClause
+    = " ELSE " result
+    ;
+
+caseOperand
+    = nonParenthesizedValueExpressionPrimary
+    | elementVariableReference
+    ;
+
+whenOperandList
+    = whenOperand ((comma whenOperand)+)?
+    ;
+
+whenOperand
+    = nonParenthesizedValueExpressionPrimary
+    | comparisonPredicatePart2
+    | nullPredicatePart2
+    | valueTypePredicatePart2
+    | normalizedPredicatePart2
+    | directedPredicatePart2
+    | labeledPredicatePart2
+    | sourcePredicatePart2
+    | destinationPredicatePart2
+    ;
+
+result
+    = resultExpression
+    | nullLiteral
+    ;
+
+resultExpression
+    = valueExpression
+    ;
+
+castSpecification
+    = " CAST " leftParen castOperand " AS " castTarget rightParen
+    ;
+
+castOperand
+    = valueExpression
+    | nullLiteral
+    ;
+
+castTarget
+    = valueType
+    ;
+
+aggregateFunction
+    = " COUNT " leftParen asterisk rightParen
+    | generalSetFunction
+    | binarySetFunction
+    ;
+
+generalSetFunction
+    = generalSetFunctionType leftParen setQuantifier? valueExpression rightParen
+    ;
+
+binarySetFunction
+    = binarySetFunctionType leftParen dependentValueExpression comma independentValueExpression rightParen
+    ;
+
+generalSetFunctionType
+    = " AVG "
+    | " COUNT "
+    | " MAX "
+    | " MIN "
+    | " SUM "
+    | " COLLECT_LIST "
+    | " STDDEV_SAMP "
+    | " STDDEV_POP "
+    ;
+
+setQuantifier
+    = " DISTINCT "
+    | " ALL "
+    ;
+
+binarySetFunctionType
+    = " PERCENTILE_CONT "
+    | " PERCENTILE_DISC "
+    ;
+
+dependentValueExpression
+    = setQuantifier? numericValueExpression
+    ;
+
+independentValueExpression
+    = numericValueExpression
+    ;
+
+element_idFunction
+    = " ELEMENT_ID " leftParen elementVariableReference rightParen
+    ;
+
+propertyReference
+    = propertySource period propertyName
+    ;
+
+propertySource
+    = nodeReferenceValueExpression
+    | edgeReferenceValueExpression
+    | recordExpression
+    ;
+
+bindingVariableReference
+    = bindingVariable
+    ;
+
+pathValueExpression
+    = pathValueConcatenation
+    | pathValuePrimary
+    ;
+
+pathValueConcatenation
+    = pathValueExpression1 concatenationOperator pathValuePrimary
+    ;
+
+pathValueExpression1
+    = pathValueExpression
+    ;
+
+pathValuePrimary
+    = valueExpressionPrimary
+    ;
+
+pathValueConstructor
+    = pathValueConstructorByEnumeration
+    ;
+
+pathValueConstructorByEnumeration
+    = " PATH " leftBracket pathElementList rightBracket
+    ;
+
+pathElementList
+    = pathElementListStart (pathElementListStep+)?
+    ;
+
+pathElementListStart
+    = nodeReferenceValueExpression
+    ;
+
+pathElementListStep
+    = comma edgeReferenceValueExpression comma nodeReferenceValueExpression
+    ;
+
+listValueExpression
+    = listConcatenation
+    | listPrimary
+    ;
+
+listConcatenation
+    = listValueExpression1 concatenationOperator listPrimary
+    ;
+
+listValueExpression1
+    = listValueExpression
+    ;
+
+listPrimary
+    = listValueFunction
+    | valueExpressionPrimary
+    ;
+
+listValueFunction
+    = trimListFunction
+    | elementsFunction
+    ;
+
+trimListFunction
+    = " TRIM " leftParen listValueExpression comma numericValueExpression rightParen
+    ;
+
+elementsFunction
+    = " ELEMENTS " leftParen pathValueExpression rightParen
+    ;
+
+listValueConstructor
+    = listValueConstructorByEnumeration
+    ;
+
+listValueConstructorByEnumeration
+    = listValueTypeName? leftBracket listElementList? rightBracket
+    ;
+
+listElementList
+    = listElement ((comma listElement)+)?
+    ;
+
+listElement
+    = valueExpression
+    ;
+
+recordConstructor
+    = " RECORD "? fieldsSpecification
+    ;
+
+fieldsSpecification
+    = leftBrace fieldList? rightBrace
+    ;
+
+fieldList
+    = field ((comma field)+)?
+    ;
+
+field
+    = fieldName colon valueExpression
+    ;
+
+booleanValueExpression
+    = booleanTerm
+    | booleanValueExpression " OR " booleanTerm
+    | booleanValueExpression " XOR " booleanTerm
+    ;
+
+booleanTerm
+    = booleanFactor
+    | booleanTerm " AND " booleanFactor
+    ;
+
+booleanFactor
+    = " NOT "? booleanTest
+    ;
+
+booleanTest
+    = booleanPrimary (" IS " " NOT "? truthValue)?
+    ;
+
+truthValue
+    = " TRUE "
+    | " FALSE "
+    | " UNKNOWN "
+    ;
+
+booleanPrimary
+    = predicate
+    | booleanPredicand
+    ;
+
+booleanPredicand
+    = parenthesizedBooleanValueExpression
+    | nonParenthesizedValueExpressionPrimary
+    ;
+
+parenthesizedBooleanValueExpression
+    = leftParen booleanValueExpression rightParen
+    ;
+
+numericValueExpression
+    = term
+    | numericValueExpression plusSign term
+    | numericValueExpression minusSign term
+    ;
+
+term
+    = factor
+    | term asterisk factor
+    | term solidus factor
+    ;
+
+factor
+    = sign? numericPrimary
+    ;
+
+numericPrimary
+    = valueExpressionPrimary
+    | numericValueFunction
+    ;
+
+numericValueFunction
+    = lengthExpression
+    | cardinalityExpression
+    | absoluteValueExpression
+    | modulusExpression
+    | trigonometricFunction
+    | generalLogarithmFunction
+    | commonLogarithm
+    | naturalLogarithm
+    | exponentialFunction
+    | powerFunction
+    | squareRoot
+    | floorFunction
+    | ceilingFunction
+    ;
+
+lengthExpression
+    = charLengthExpression
+    | byteLengthExpression
+    | pathLengthExpression
+    ;
+
+cardinalityExpression
+    = " CARDINALITY " leftParen cardinalityExpressionArgument rightParen
+    | " SIZE " leftParen listValueExpression rightParen
+    ;
+
+cardinalityExpressionArgument
+    = bindingTableReferenceValueExpression
+    | pathValueExpression
+    | listValueExpression
+    | recordExpression
+    ;
+
+charLengthExpression
+    = (" CHAR_LENGTH " | " CHARACTER_LENGTH ") leftParen characterStringValueExpression rightParen
+    ;
+
+byteLengthExpression
+    = (" BYTE_LENGTH " | " OCTET_LENGTH ") leftParen byteStringValueExpression rightParen
+    ;
+
+pathLengthExpression
+    = " PATH_LENGTH " leftParen pathValueExpression rightParen
+    ;
+
+absoluteValueExpression
+    = " ABS " leftParen numericValueExpression rightParen
+    ;
+
+modulusExpression
+    = " MOD " leftParen numericValueExpressionDividend comma numericValueExpressionDivisor rightParen
+    ;
+
+numericValueExpressionDividend
+    = numericValueExpression
+    ;
+
+numericValueExpressionDivisor
+    = numericValueExpression
+    ;
+
+trigonometricFunction
+    = trigonometricFunctionName leftParen numericValueExpression rightParen
+    ;
+
+trigonometricFunctionName
+    = " SIN "
+    | " COS "
+    | " TAN "
+    | " COT "
+    | " SINH "
+    | " COSH "
+    | " TANH "
+    | " ASIN "
+    | " ACOS "
+    | " ATAN "
+    | " DEGREES "
+    | " RADIANS "
+    ;
+
+generalLogarithmFunction
+    = " LOG " leftParen generalLogarithmBase comma generalLogarithmArgument rightParen
+    ;
+
+generalLogarithmBase
+    = numericValueExpression
+    ;
+
+generalLogarithmArgument
+    = numericValueExpression
+    ;
+
+commonLogarithm
+    = " LOG10 " leftParen numericValueExpression rightParen
+    ;
+
+naturalLogarithm
+    = " LN " leftParen numericValueExpression rightParen
+    ;
+
+exponentialFunction
+    = " EXP " leftParen numericValueExpression rightParen
+    ;
+
+powerFunction
+    = " POWER " leftParen numericValueExpressionBase comma numericValueExpressionExponent rightParen
+    ;
+
+numericValueExpressionBase
+    = numericValueExpression
+    ;
+
+numericValueExpressionExponent
+    = numericValueExpression
+    ;
+
+squareRoot
+    = " SQRT " leftParen numericValueExpression rightParen
+    ;
+
+floorFunction
+    = " FLOOR " leftParen numericValueExpression rightParen
+    ;
+
+ceilingFunction
+    = (" CEIL " | " CEILING ") leftParen numericValueExpression rightParen
+    ;
+
+stringValueExpression
+    = characterStringValueExpression
+    | byteStringValueExpression
+    ;
+
+characterStringValueExpression
+    = characterStringConcatenation
+    | characterStringPrimary
+    ;
+
+characterStringConcatenation
+    = characterStringValueExpression concatenationOperator characterStringPrimary
+    ;
+
+characterStringPrimary
+    = valueExpressionPrimary
+    | characterStringFunction
+    ;
+
+byteStringValueExpression
+    = byteStringConcatenation
+    | byteStringPrimary
+    ;
+
+byteStringPrimary
+    = valueExpressionPrimary
+    | byteStringFunction
+    ;
+
+byteStringConcatenation
+    = byteStringValueExpression concatenationOperator byteStringPrimary
+    ;
+
+characterStringFunction
+    = substringFunction
+    | fold
+    | trimFunction
+    | normalizeFunction
+    ;
+
+substringFunction
+    = (" LEFT " | " RIGHT ") leftParen characterStringValueExpression comma stringLength rightParen
+    ;
+
+fold
+    = (" UPPER " | " LOWER ") leftParen characterStringValueExpression rightParen
+    ;
+
+trimFunction
+    = singleCharacterTrimFunction
+    | multiCharacterTrimFunction
+    ;
+
+singleCharacterTrimFunction
+    = " TRIM " leftParen trimOperands rightParen
+    ;
+
+multiCharacterTrimFunction
+    = (" BTRIM " | " LTRIM " | " RTRIM ") leftParen trimSource (comma trimCharacterString)? rightParen
+    ;
+
+trimOperands
+    = (trimSpecification? trimCharacterString? " FROM ")? trimSource
+    ;
+
+trimSource
+    = characterStringValueExpression
+    ;
+
+trimSpecification
+    = " LEADING "
+    | " TRAILING "
+    | " BOTH "
+    ;
+
+trimCharacterString
+    = characterStringValueExpression
+    ;
+
+normalizeFunction
+    = " NORMALIZE " leftParen characterStringValueExpression (comma normalForm)? rightParen
+    ;
+
+normalForm
+    = " NFC "
+    | " NFD "
+    | " NFKC "
+    | " NFKD "
+    ;
+
+stringLength
+    = numericValueExpression
+    ;
+
+byteStringFunction
+    = byteStringSubstringFunction
+    | byteStringTrimFunction
+    ;
+
+byteStringSubstringFunction
+    = (" LEFT " | " RIGHT ") leftParen byteStringValueExpression comma stringLength rightParen
+    ;
+
+byteStringTrimFunction
+    = " TRIM " leftParen byteStringTrimOperands rightParen
+    ;
+
+byteStringTrimOperands
+    = (trimSpecification? trimByteString? " FROM ")? byteStringTrimSource
+    ;
+
+byteStringTrimSource
+    = byteStringValueExpression
+    ;
+
+trimByteString
+    = byteStringValueExpression
+    ;
+
+datetimeValueExpression
+    = datetimePrimary
+    | durationValueExpression plusSign datetimePrimary
+    | datetimeValueExpression plusSign durationTerm
+    | datetimeValueExpression minusSign durationTerm
+    ;
+
+datetimePrimary
+    = valueExpressionPrimary
+    | datetimeValueFunction
+    ;
+
+datetimeValueFunction
+    = dateFunction
+    | timeFunction
+    | datetimeFunction
+    | localtimeFunction
+    | localdatetimeFunction
+    ;
+
+dateFunction
+    = " CURRENT_DATE "
+    | " DATE " leftParen dateFunctionParameters? rightParen
+    ;
+
+timeFunction
+    = " CURRENT_TIME "
+    | " ZONED_TIME " leftParen timeFunctionParameters? rightParen
+    ;
+
+localtimeFunction
+    = " LOCAL_TIME " (leftParen timeFunctionParameters? rightParen)?
+    ;
+
+datetimeFunction
+    = " CURRENT_TIMESTAMP "
+    | " ZONED_DATETIME " leftParen datetimeFunctionParameters? rightParen
+    ;
+
+localdatetimeFunction
+    = " LOCAL_TIMESTAMP "
+    | " LOCAL_DATETIME " leftParen datetimeFunctionParameters? rightParen
+    ;
+
+dateFunctionParameters
+    = dateString
+    | recordConstructor
+    ;
+
+timeFunctionParameters
+    = timeString
+    | recordConstructor
+    ;
+
+datetimeFunctionParameters
+    = datetimeString
+    | recordConstructor
+    ;
+
+durationValueExpression
+    = durationTerm
+    | durationAdditionAndSubtraction
+    | datetimeSubtraction
+    ;
+
+durationAdditionAndSubtraction
+    = durationValueExpression1 plusSign durationTerm1
+    | durationValueExpression1 minusSign durationTerm1
+    ;
+
+datetimeSubtraction
+    = " DURATION_BETWEEN " leftParen datetimeSubtractionParameters rightParen temporalDurationQualifier?
+    ;
+
+datetimeSubtractionParameters
+    = datetimeValueExpression1 comma datetimeValueExpression2
+    ;
+
+durationTerm
+    = durationFactor
+    | durationTerm2 asterisk factor
+    | durationTerm2 solidus factor
+    | term asterisk durationFactor
+    ;
+
+durationFactor
+    = sign? durationPrimary
+    ;
+
+durationPrimary
+    = valueExpressionPrimary
+    | durationValueFunction
+    ;
+
+durationValueExpression1
+    = durationValueExpression
+    ;
+
+durationTerm1
+    = durationTerm
+    ;
+
+durationTerm2
+    = durationTerm
+    ;
+
+datetimeValueExpression1
+    = datetimeValueExpression
+    ;
+
+datetimeValueExpression2
+    = datetimeValueExpression
+    ;
+
+durationValueFunction
+    = durationFunction
+    | durationAbsoluteValueFunction
+    ;
+
+durationFunction
+    = " DURATION " leftParen durationFunctionParameters rightParen
+    ;
+
+durationFunctionParameters
+    = durationString
+    | recordConstructor
+    ;
+
+durationAbsoluteValueFunction
+    = " ABS " leftParen durationValueExpression rightParen
+    ;
+
+objectName
+    = identifier
+    ;
+
+objectNameOrBindingVariable
+    = regularIdentifier
+    ;
+
+directoryName
+    = identifier
+    ;
+
+schemaName
+    = identifier
+    ;
+
+graphName
+    = regularIdentifier
+    | delimitedGraphName
+    ;
+
+delimitedGraphName
+    = delimitedIdentifier
+    ;
+
+graphTypeName
+    = identifier
+    ;
+
+nodeTypeName
+    = identifier
+    ;
+
+edgeTypeName
+    = identifier
+    ;
+
+bindingTableName
+    = regularIdentifier
+    | delimitedBindingTableName
+    ;
+
+delimitedBindingTableName
+    = delimitedIdentifier
+    ;
+
+procedureName
+    = identifier
+    ;
+
+labelName
+    = identifier
+    ;
+
+propertyName
+    = identifier
+    ;
+
+fieldName
+    = identifier
+    ;
+
+parameterName
+    = separatedIdentifier
+    ;
+
+elementVariable
+    = bindingVariable
+    ;
+
+pathVariable
+    = bindingVariable
+    ;
+
+subpathVariable
+    = regularIdentifier
+    ;
+
+bindingVariable
+    = regularIdentifier
+    ;
+
+unsignedLiteral
+    = unsignedNumericLiteral
+    | generalLiteral
+    ;
+
+generalLiteral
+    = booleanLiteral
+    | characterStringLiteral
+    | byteStringLiteral
+    | temporalLiteral
+    | durationLiteral
+    | nullLiteral
+    | listLiteral
+    | recordLiteral
+    ;
+
+booleanLiteral
+    = " TRUE "
+    | " FALSE "
+    | " UNKNOWN "
+    ;
+
+characterStringLiteral
+    = singleQuotedCharacterSequence
+    | doubleQuotedCharacterSequence
+    ;
+
+singleQuotedCharacterSequence
+    = noEscape? unbrokenSingleQuotedCharacterSequence
+    ;
+
+doubleQuotedCharacterSequence
+    = noEscape? unbrokenDoubleQuotedCharacterSequence
+    ;
+
+accentQuotedCharacterSequence
+    = noEscape? unbrokenAccentQuotedCharacterSequence
+    ;
+
+noEscape
+    = commercialAt
+    ;
+
+unbrokenSingleQuotedCharacterSequence
+    = quote (singleQuotedCharacterRepresentation+)? quote
+    ;
+
+unbrokenDoubleQuotedCharacterSequence
+    = doubleQuote (doubleQuotedCharacterRepresentation+)? doubleQuote
+    ;
+
+unbrokenAccentQuotedCharacterSequence
+    = graveAccent (accentQuotedCharacterRepresentation+)? graveAccent
+    ;
+
+singleQuotedCharacterRepresentation
+    = characterRepresentation
+    ;
+
+doubleQuotedCharacterRepresentation
+    = characterRepresentation
+    ;
+
+accentQuotedCharacterRepresentation
+    = characterRepresentation
+    ;
+
+characterRepresentation
+    = "a" | "b" | "c"
+    ;
+
+byteStringLiteral
+    = "X" quote (space+)? ((hexDigit (space+)? hexDigit (space+)?)+)? quote ((separator quote (space+)? ((hexDigit (space+)? hexDigit (space+)?)+)? quote)+)?
+    ;
+
+sign
+    = plusSign
+    | minusSign
+    ;
+
+unsignedNumericLiteral
+    = exactNumericLiteral
+    | approximateNumericLiteral
+    ;
+
+exactNumericLiteral
+    = unsignedDecimalInScientificNotation exactNumberSuffix
+    | unsignedDecimalInCommonNotation exactNumberSuffix?
+    | unsignedDecimalInteger exactNumberSuffix
+    | unsignedInteger
+    ;
+
+exactNumberSuffix
+    = "M"
+    ;
+
+unsignedDecimalInScientificNotation
+    = mantissa "E" exponent
+    ;
+
+mantissa
+    = unsignedDecimalInCommonNotation
+    | unsignedDecimalInteger
+    ;
+
+exponent
+    = signedDecimalInteger
+    ;
+
+unsignedDecimalInCommonNotation
+    = unsignedDecimalInteger (period unsignedDecimalInteger?)
+    | period unsignedDecimalInteger
+    ;
+
+unsignedInteger
+    = unsignedDecimalInteger
+    | unsignedHexadecimalInteger
+    | unsignedOctalInteger
+    | unsignedBinaryInteger
+    ;
+
+signedDecimalInteger
+    = sign? unsignedDecimalInteger
+    ;
+
+unsignedDecimalInteger
+    = digit ((underscore? digit)+)?
+    ;
+
+unsignedHexadecimalInteger
+    = "0x" (underscore? hexDigit)+
+    ;
+
+unsignedOctalInteger
+    = "0o" (underscore? octalDigit)+
+    ;
+
+unsignedBinaryInteger
+    = "0b" (underscore? binaryDigit)+
+    ;
+
+approximateNumericLiteral
+    = unsignedDecimalInScientificNotation approximateNumberSuffix?
+    | unsignedDecimalInCommonNotation approximateNumberSuffix
+    | unsignedDecimalInteger approximateNumberSuffix
+    ;
+
+approximateNumberSuffix
+    = "F"
+    | "D"
+    ;
+
+temporalLiteral
+    = dateLiteral
+    | timeLiteral
+    | datetimeLiteral
+    ;
+
+dateLiteral
+    = " DATE " dateString
+    ;
+
+timeLiteral
+    = " TIME " timeString
+    ;
+
+datetimeLiteral
+    = (" DATETIME " | " TIMESTAMP ") datetimeString
+    ;
+
+dateString
+    = characterStringLiteral
+    ;
+
+timeString
+    = characterStringLiteral
+    ;
+
+datetimeString
+    = characterStringLiteral
+    ;
+
+timeZoneString
+    = characterStringLiteral
+    ;
+
+durationLiteral
+    = " DURATION " durationString
+    ;
+
+durationString
+    = characterStringLiteral
+    ;
+
+nullLiteral
+    = " NULL "
+    ;
+
+listLiteral
+    = listValueConstructorByEnumeration
+    ;
+
+recordLiteral
+    = recordConstructor
+    ;
+
+identifier
+    = regularIdentifier
+    | delimitedIdentifier
+    ;
+
+separatedIdentifier
+    = extendedIdentifier
+    | delimitedIdentifier
+    ;
+
+regularIdentifier
+    = identifierStart (identifierExtend+)?
+    ;
+
+extendedIdentifier
+    = identifierExtend+
+    ;
+
+delimitedIdentifier
+    = doubleQuotedCharacterSequence
+    | accentQuotedCharacterSequence
+    ;
+
+identifierStart
+    = "_" | "a" | "b" | "c"
+    ;
+
+identifierExtend
+    = "a" | "b" | "c"
+    ;
+
+substitutedParameterReference
+    = doubleDollarSign parameterName
+    ;
+
+generalParameterReference
+    = dollarSign parameterName
+    ;
+
+multisetAlternationOperator
+    = "|+|"
+    ;
+
+bracketRightArrow
+    = "]->"
+    ;
+
+bracketTildeRightArrow
+    = "]~>"
+    ;
+
+concatenationOperator
+    = "||"
+    ;
+
+doubleColon
+    = "::"
+    ;
+
+doubleDollarSign
+    = "$$"
+    ;
+
+doubleMinusSign
+    = "--"
+    ;
+
+doublePeriod
+    = ".."
+    ;
+
+greaterThanOperator
+    = rightAngleBracket
+    ;
+
+greaterThanOrEqualsOperator
+    = ">="
+    ;
+
+leftArrow
+    = "<-"
+    ;
+
+leftArrowTilde
+    = "<~"
+    ;
+
+leftArrowBracket
+    = "<-["
+    ;
+
+leftArrowTildeBracket
+    = "<~["
+    ;
+
+leftMinusRight
+    = "<->"
+    ;
+
+leftMinusSlash
+    = "<-/"
+    ;
+
+leftTildeSlash
+    = "<~/"
+    ;
+
+lessThanOperator
+    = leftAngleBracket
+    ;
+
+lessThanOrEqualsOperator
+    = "<="
+    ;
+
+minusLeftBracket
+    = "-["
+    ;
+
+minusSlash
+    = "-/"
+    ;
+
+notEqualsOperator
+    = "<>"
+    ;
+
+rightArrow
+    = "->"
+    ;
+
+rightBracketMinus
+    = "]-"
+    ;
+
+rightBracketTilde
+    = "]~"
+    ;
+
+rightDoubleArrow
+    = "=>"
+    ;
+
+slashMinus
+    = "/-"
+    ;
+
+slashMinusRight
+    = "/->"
+    ;
+
+slashTilde
+    = "/~"
+    ;
+
+slashTildeRight
+    = "/~>"
+    ;
+
+tildeLeftBracket
+    = "~["
+    ;
+
+tildeRightArrow
+    = "~>"
+    ;
+
+tildeSlash
+    = "~/"
+    ;
+
+doubleSolidus
+    = "//"
+    ;
+
+separator
+    = (comment | whitespace)+
+    ;
+
+whitespace
+    = " "
+    ;
+
+comment
+    = simpleComment
+    | bracketedComment
+    ;
+
+simpleComment
+    = simpleCommentIntroducer (simpleCommentCharacter+)? newline
+    ;
+
+simpleCommentIntroducer
+    = doubleSolidus
+    | doubleMinusSign
+    ;
+
+simpleCommentCharacter
+    = "a" | "b" | "c"
+    ;
+
+bracketedComment
+    = bracketedCommentIntroducer bracketedCommentContents bracketedCommentTerminator
+    ;
+
+bracketedCommentIntroducer
+    = "/*"
+    ;
+
+bracketedCommentTerminator
+    = "*/"
+    ;
+
+bracketedCommentContents
+    = "a" | "b" | "c"
+    ;
+
+newline
+    = "\n"
+    ;
+
+edgeSynonym
+    = " EDGE "
+    | " RELATIONSHIP "
+    ;
+
+edgesSynonym
+    = " EDGES "
+    | " RELATIONSHIPS "
+    ;
+
+nodeSynonym
+    = " NODE "
+    | " VERTEX "
+    ;
+
+implies
+    = rightDoubleArrow
+    | " IMPLIES "
+    ;
+
+hexDigit
+    = standardDigit
+    | "A"
+    | "B"
+    | "C"
+    | "D"
+    | "E"
+    | "F"
+    | "a"
+    | "b"
+    | "c"
+    | "d"
+    | "e"
+    | "f"
+    ;
+
+digit
+    = standardDigit
+    ;
+
+standardDigit
+    = octalDigit
+    | "8"
+    | "9"
+    ;
+
+octalDigit
+    = binaryDigit
+    | "2"
+    | "3"
+    | "4"
+    | "5"
+    | "6"
+    | "7"
+    ;
+
+binaryDigit
+    = "0"
+    | "1"
+    ;
+
+space
+    = " "
+    ;
+
+ampersand
+    = "&"
+    ;
+
+asterisk
+    = "*"
+    ;
+
+colon
+    = ":"
+    ;
+
+comma
+    = ","
+    ;
+
+commercialAt
+    = "@"
+    ;
+
+dollarSign
+    = "$"
+    ;
+
+doubleQuote
+    = "\""
+    ;
+
+equalsOperator
+    = "="
+    ;
+
+exclamationMark
+    = "!"
+    ;
+
+rightAngleBracket
+    = ">"
+    ;
+
+graveAccent
+    = "`"
+    ;
+
+leftBrace
+    = "{"
+    ;
+
+leftBracket
+    = "["
+    ;
+
+leftParen
+    = "("
+    ;
+
+leftAngleBracket
+    = "<"
+    ;
+
+minusSign
+    = "-"
+    ;
+
+percent
+    = "%"
+    ;
+
+period
+    = "."
+    ;
+
+plusSign
+    = "+"
+    ;
+
+questionMark
+    = "?"
+    ;
+
+quote
+    = "'"
+    ;
+
+rightBrace
+    = "}"
+    ;
+
+rightBracket
+    = "]"
+    ;
+
+rightParen
+    = ")"
+    ;
+
+solidus
+    = "/"
+    ;
+
+tilde
+    = "~"
+    ;
+
+underscore
+    = "_"
+    ;
+
+verticalBar
+    = "|"
+    ;

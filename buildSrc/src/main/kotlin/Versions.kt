@@ -6,8 +6,8 @@ object Versions {
     const val tool = "1.0.0"
 
     // plugins
-    const val scalatestPlugin = "0.31"
-    const val artifactoryPlugin = "4.21.0"
+    const val scalatestPlugin = "0.32"
+    const val artifactoryPlugin = "4.29.0"
     const val shadowPlugin = "7.0.0"
 
     // dependencies
