@@ -91,7 +91,7 @@ startTransactionCommand
     ;
 
 transactionCharacteristics
-    = transactionMode ((comma transactionMode)+)?
+    = transactionMode (( whitespace comma whitespace  transactionMode)+)?
     ;
 
 transactionMode
@@ -112,7 +112,7 @@ commitCommand
     ;
 
 nestedProcedureSpecification
-    = leftBrace procedureSpecification rightBrace
+    =  whitespace leftBrace whitespace  procedureSpecification whitespace  rightBrace whitespace 
     ;
 
 procedureSpecification
@@ -126,7 +126,7 @@ catalogModifyingProcedureSpecification
     ;
 
 nestedDataModifyingProcedureSpecification
-    = leftBrace dataModifyingProcedureSpecification rightBrace
+    =  whitespace leftBrace whitespace  dataModifyingProcedureSpecification whitespace  rightBrace whitespace 
     ;
 
 dataModifyingProcedureSpecification
@@ -134,7 +134,7 @@ dataModifyingProcedureSpecification
     ;
 
 nestedQuerySpecification
-    = leftBrace querySpecification rightBrace
+    =  whitespace leftBrace whitespace  querySpecification whitespace  rightBrace whitespace 
     ;
 
 querySpecification
@@ -178,7 +178,7 @@ optTypedGraphInitializer
     ;
 
 graphInitializer
-    = equalsOperator graphExpression
+    =  whitespace equalsOperator whitespace  graphExpression
     ;
 
 bindingTableVariableDefinition
@@ -190,7 +190,7 @@ optTypedBindingTableInitializer
     ;
 
 bindingTableInitializer
-    = equalsOperator bindingTableExpression
+    =  whitespace equalsOperator whitespace  bindingTableExpression
     ;
 
 valueVariableDefinition
@@ -202,7 +202,7 @@ optTypedValueInitializer
     ;
 
 valueInitializer
-    = equalsOperator valueExpression
+    =  whitespace equalsOperator whitespace  valueExpression
     ;
 
 graphExpression
@@ -297,7 +297,7 @@ graphTypeSource
     ;
 
 copyOfGraphType
-    = " COPY " " OF " graphTypeReference
+    = " COPY " " OF " (graphTypeReference)
     ;
 
 dropGraphTypeStatement
@@ -365,7 +365,7 @@ setStatement
     ;
 
 setItemList
-    = setItem ((comma setItem)+)?
+    = setItem (( whitespace comma whitespace  setItem)+)?
     ;
 
 setItem
@@ -375,11 +375,11 @@ setItem
     ;
 
 setPropertyItem
-    = bindingVariableReference period propertyName equalsOperator valueExpression
+    = bindingVariableReference whitespace  period whitespace  propertyName whitespace  equalsOperator whitespace  valueExpression
     ;
 
 setAllPropertiesItem
-    = bindingVariableReference equalsOperator leftBrace propertyKeyValuePairList? rightBrace
+    = bindingVariableReference whitespace  equalsOperator whitespace  whitespace  leftBrace whitespace  propertyKeyValuePairList? whitespace  rightBrace whitespace 
     ;
 
 setLabelItem
@@ -391,7 +391,7 @@ removeStatement
     ;
 
 removeItemList
-    = removeItem ((comma removeItem)+)?
+    = removeItem (( whitespace comma whitespace  removeItem)+)?
     ;
 
 removeItem
@@ -400,7 +400,7 @@ removeItem
     ;
 
 removePropertyItem
-    = bindingVariableReference period propertyName
+    = bindingVariableReference whitespace  period whitespace  propertyName
     ;
 
 removeLabelItem
@@ -412,7 +412,7 @@ deleteStatement
     ;
 
 deleteItemList
-    = deleteItem ((comma deleteItem)+)?
+    = deleteItem (( whitespace comma whitespace  deleteItem)+)?
     ;
 
 deleteItem
@@ -453,7 +453,7 @@ linearQueryStatement
     ;
 
 focusedLinearQueryStatement
-    = focusedLinearQueryStatementPart* focusedLinearQueryAndPrimitiveResultStatementPart
+    = (focusedLinearQueryStatementPart+)? focusedLinearQueryAndPrimitiveResultStatementPart
     | focusedPrimitiveResultStatement
     | focusedNestedQuerySpecification
     | selectStatement
@@ -512,8 +512,8 @@ optionalMatchStatement
 
 optionalOperand
     = simpleMatchStatement
-    | leftBrace matchStatementBlock rightBrace
-    | leftParen matchStatementBlock rightParen
+    |  whitespace leftBrace whitespace  matchStatementBlock whitespace  rightBrace whitespace 
+    |  whitespace leftParen whitespace  matchStatementBlock whitespace  rightParen whitespace 
     ;
 
 matchStatementBlock
@@ -533,12 +533,12 @@ letStatement
     ;
 
 letVariableDefinitionList
-    = letVariableDefinition ((comma letVariableDefinition)+)?
+    = letVariableDefinition (( whitespace comma whitespace  letVariableDefinition)+)?
     ;
 
 letVariableDefinition
     = valueVariableDefinition
-    | bindingVariable equalsOperator valueExpression
+    | bindingVariable whitespace  equalsOperator whitespace  valueExpression
     ;
 
 forStatement
@@ -578,12 +578,12 @@ returnStatement
     ;
 
 returnStatementBody
-    = setQuantifier? (asterisk | returnItemList) groupByClause?
+    = setQuantifier? ( whitespace asterisk whitespace  | returnItemList) groupByClause?
     | " NO " " BINDINGS "
     ;
 
 returnItemList
-    = returnItem ((comma returnItem)+)?
+    = returnItem (( whitespace comma whitespace  returnItem)+)?
     ;
 
 returnItem
@@ -595,11 +595,11 @@ returnItemAlias
     ;
 
 selectStatement
-    = " SELECT " setQuantifier? (asterisk | selectItemList) (selectStatementBody whereClause? groupByClause? havingClause? orderByClause? offsetClause? limitClause?)?
+    = " SELECT " setQuantifier? ( whitespace asterisk whitespace  | selectItemList) (selectStatementBody whereClause? groupByClause? havingClause? orderByClause? offsetClause? limitClause?)?
     ;
 
 selectItemList
-    = selectItem ((comma selectItem)+)?
+    = selectItem (( whitespace comma whitespace  selectItem)+)?
     ;
 
 selectItem
@@ -619,7 +619,7 @@ selectStatementBody
     ;
 
 selectGraphMatchList
-    = selectGraphMatch ((comma selectGraphMatch)+)?
+    = selectGraphMatch (( whitespace comma whitespace  selectGraphMatch)+)?
     ;
 
 selectGraphMatch
@@ -645,19 +645,19 @@ inlineProcedureCall
     ;
 
 variableScopeClause
-    = leftParen bindingVariableReferenceList? rightParen
+    =  whitespace leftParen whitespace  bindingVariableReferenceList? whitespace  rightParen whitespace 
     ;
 
 bindingVariableReferenceList
-    = bindingVariableReference ((comma bindingVariableReference)+)?
+    = bindingVariableReference (( whitespace comma whitespace  bindingVariableReference)+)?
     ;
 
 namedProcedureCall
-    = procedureReference leftParen procedureArgumentList? rightParen yieldClause?
+    = procedureReference whitespace  leftParen whitespace  procedureArgumentList? whitespace  rightParen whitespace  yieldClause?
     ;
 
 procedureArgumentList
-    = procedureArgument ((comma procedureArgument)+)?
+    = procedureArgument (( whitespace comma whitespace  procedureArgument)+)?
     ;
 
 procedureArgument
@@ -681,7 +681,7 @@ graphPatternYieldClause
     ;
 
 graphPatternYieldItemList
-    = graphPatternYieldItem ((comma graphPatternYieldItem)+)?
+    = graphPatternYieldItem (( whitespace comma whitespace  graphPatternYieldItem)+)?
     | " NO " " BINDINGS "
     ;
 
@@ -718,7 +718,7 @@ edgeBindingsOrEdges
     ;
 
 pathPatternList
-    = pathPattern ((comma pathPattern)+)?
+    = pathPattern (( whitespace comma whitespace  pathPattern)+)?
     ;
 
 pathPattern
@@ -726,7 +726,7 @@ pathPattern
     ;
 
 pathVariableDeclaration
-    = pathVariable equalsOperator
+    = pathVariable whitespace  equalsOperator whitespace 
     ;
 
 keepClause
@@ -742,7 +742,7 @@ insertGraphPattern
     ;
 
 insertPathPatternList
-    = insertPathPattern ((comma insertPathPattern)+)?
+    = insertPathPattern (( whitespace comma whitespace  insertPathPattern)+)?
     ;
 
 insertPathPattern
@@ -750,7 +750,7 @@ insertPathPattern
     ;
 
 insertNodePattern
-    = leftParen insertElementPatternFiller? rightParen
+    =  whitespace leftParen whitespace  insertElementPatternFiller? whitespace  rightParen whitespace 
     ;
 
 insertEdgePattern
@@ -760,15 +760,15 @@ insertEdgePattern
     ;
 
 insertEdgePointingLeft
-    = leftArrowBracket insertElementPatternFiller? rightBracketMinus
+    =  whitespace leftArrowBracket whitespace  insertElementPatternFiller? whitespace  rightBracketMinus whitespace 
     ;
 
 insertEdgePointingRight
-    = minusLeftBracket insertElementPatternFiller? bracketRightArrow
+    =  whitespace minusLeftBracket whitespace  insertElementPatternFiller? whitespace  bracketRightArrow whitespace 
     ;
 
 insertEdgeUndirected
-    = tildeLeftBracket insertElementPatternFiller? rightBracketTilde
+    =  whitespace tildeLeftBracket whitespace  insertElementPatternFiller? whitespace  rightBracketTilde whitespace 
     ;
 
 insertElementPatternFiller
@@ -854,11 +854,11 @@ pathPatternExpression
     ;
 
 pathMultisetAlternation
-    = pathTerm multisetAlternationOperator pathTerm ((multisetAlternationOperator pathTerm)+)?
+    = pathTerm whitespace  multisetAlternationOperator whitespace  pathTerm (( whitespace multisetAlternationOperator whitespace  pathTerm)+)?
     ;
 
 pathPatternUnion
-    = pathTerm verticalBar pathTerm ((verticalBar pathTerm)+)?
+    = pathTerm whitespace  verticalBar whitespace  pathTerm (( whitespace verticalBar whitespace  pathTerm)+)?
     ;
 
 pathTerm
@@ -881,7 +881,7 @@ quantifiedPathPrimary
     ;
 
 questionedPathPrimary
-    = pathPrimary questionMark
+    = pathPrimary whitespace  questionMark whitespace 
     ;
 
 pathPrimary
@@ -896,7 +896,7 @@ elementPattern
     ;
 
 nodePattern
-    = leftParen elementPatternFiller rightParen
+    =  whitespace leftParen whitespace  elementPatternFiller whitespace  rightParen whitespace 
     ;
 
 elementPatternFiller
@@ -913,7 +913,7 @@ isLabelExpression
 
 isOrColon
     = " IS "
-    | colon
+    |  whitespace colon whitespace 
     ;
 
 elementPatternPredicate
@@ -926,15 +926,15 @@ elementPatternWhereClause
     ;
 
 elementPropertySpecification
-    = leftBrace propertyKeyValuePairList rightBrace
+    =  whitespace leftBrace whitespace  propertyKeyValuePairList whitespace  rightBrace whitespace 
     ;
 
 propertyKeyValuePairList
-    = propertyKeyValuePair ((comma propertyKeyValuePair)+)?
+    = propertyKeyValuePair (( whitespace comma whitespace  propertyKeyValuePair)+)?
     ;
 
 propertyKeyValuePair
-    = propertyName colon valueExpression
+    = propertyName whitespace  colon whitespace  valueExpression
     ;
 
 edgePattern
@@ -953,49 +953,49 @@ fullEdgePattern
     ;
 
 fullEdgePointingLeft
-    = leftArrowBracket elementPatternFiller rightBracketMinus
+    =  whitespace leftArrowBracket whitespace  elementPatternFiller whitespace  rightBracketMinus whitespace 
     ;
 
 fullEdgeUndirected
-    = tildeLeftBracket elementPatternFiller rightBracketTilde
+    =  whitespace tildeLeftBracket whitespace  elementPatternFiller whitespace  rightBracketTilde whitespace 
     ;
 
 fullEdgePointingRight
-    = minusLeftBracket elementPatternFiller bracketRightArrow
+    =  whitespace minusLeftBracket whitespace  elementPatternFiller whitespace  bracketRightArrow whitespace 
     ;
 
 fullEdgeLeftOrUndirected
-    = leftArrowTildeBracket elementPatternFiller rightBracketTilde
+    =  whitespace leftArrowTildeBracket whitespace  elementPatternFiller whitespace  rightBracketTilde whitespace 
     ;
 
 fullEdgeUndirectedOrRight
-    = tildeLeftBracket elementPatternFiller bracketTildeRightArrow
+    =  whitespace tildeLeftBracket whitespace  elementPatternFiller whitespace  bracketTildeRightArrow whitespace 
     ;
 
 fullEdgeLeftOrRight
-    = leftArrowBracket elementPatternFiller bracketRightArrow
+    =  whitespace leftArrowBracket whitespace  elementPatternFiller whitespace  bracketRightArrow whitespace 
     ;
 
 fullEdgeAnyDirection
-    = minusLeftBracket elementPatternFiller rightBracketMinus
+    =  whitespace minusLeftBracket whitespace  elementPatternFiller whitespace  rightBracketMinus whitespace 
     ;
 
 abbreviatedEdgePattern
-    = leftArrow
-    | tilde
-    | rightArrow
-    | leftArrowTilde
-    | tildeRightArrow
-    | leftMinusRight
-    | minusSign
+    =  whitespace leftArrow whitespace 
+    |  whitespace tilde whitespace 
+    |  whitespace rightArrow whitespace 
+    |  whitespace leftArrowTilde whitespace 
+    |  whitespace tildeRightArrow whitespace 
+    |  whitespace leftMinusRight whitespace 
+    |  whitespace minusSign whitespace 
     ;
 
 parenthesizedPathPatternExpression
-    = leftParen subpathVariableDeclaration? pathModePrefix? pathPatternExpression parenthesizedPathPatternWhereClause? rightParen
+    =  whitespace leftParen whitespace  subpathVariableDeclaration? pathModePrefix? pathPatternExpression parenthesizedPathPatternWhereClause? whitespace  rightParen whitespace 
     ;
 
 subpathVariableDeclaration
-    = subpathVariable equalsOperator
+    = subpathVariable whitespace  equalsOperator whitespace 
     ;
 
 parenthesizedPathPatternWhereClause
@@ -1008,7 +1008,7 @@ labelExpression
     ;
 
 labelDisjunction
-    = labelExpression verticalBar labelTerm
+    = labelExpression whitespace  verticalBar whitespace  labelTerm
     ;
 
 labelTerm
@@ -1017,7 +1017,7 @@ labelTerm
     ;
 
 labelConjunction
-    = labelTerm ampersand labelFactor
+    = labelTerm whitespace  ampersand whitespace  labelFactor
     ;
 
 labelFactor
@@ -1026,7 +1026,7 @@ labelFactor
     ;
 
 labelNegation
-    = exclamationMark labelPrimary
+    =  whitespace exclamationMark whitespace  labelPrimary
     ;
 
 labelPrimary
@@ -1036,11 +1036,11 @@ labelPrimary
     ;
 
 wildcardLabel
-    = percent
+    =  whitespace percent whitespace 
     ;
 
 parenthesizedLabelExpression
-    = leftParen labelExpression rightParen
+    =  whitespace leftParen whitespace  labelExpression whitespace  rightParen whitespace 
     ;
 
 pathVariableReference
@@ -1052,18 +1052,18 @@ elementVariableReference
     ;
 
 graphPatternQuantifier
-    = asterisk
-    | plusSign
+    =  whitespace asterisk whitespace 
+    |  whitespace plusSign whitespace 
     | fixedQuantifier
     | generalQuantifier
     ;
 
 fixedQuantifier
-    = leftBrace unsignedInteger rightBrace
+    =  whitespace leftBrace whitespace  unsignedInteger whitespace  rightBrace whitespace 
     ;
 
 generalQuantifier
-    = leftBrace lowerBound? comma upperBound? rightBrace
+    =  whitespace leftBrace whitespace  lowerBound? whitespace  comma whitespace  upperBound? whitespace  rightBrace whitespace 
     ;
 
 lowerBound
@@ -1085,31 +1085,31 @@ simplifiedPathPatternExpression
     ;
 
 simplifiedDefaultingLeft
-    = leftMinusSlash simplifiedContents slashMinus
+    =  whitespace leftMinusSlash whitespace  simplifiedContents whitespace  slashMinus whitespace 
     ;
 
 simplifiedDefaultingUndirected
-    = tildeSlash simplifiedContents slashTilde
+    =  whitespace tildeSlash whitespace  simplifiedContents whitespace  slashTilde whitespace 
     ;
 
 simplifiedDefaultingRight
-    = minusSlash simplifiedContents slashMinusRight
+    =  whitespace minusSlash whitespace  simplifiedContents whitespace  slashMinusRight whitespace 
     ;
 
 simplifiedDefaultingLeftOrUndirected
-    = leftTildeSlash simplifiedContents slashTilde
+    =  whitespace leftTildeSlash whitespace  simplifiedContents whitespace  slashTilde whitespace 
     ;
 
 simplifiedDefaultingUndirectedOrRight
-    = tildeSlash simplifiedContents slashTildeRight
+    =  whitespace tildeSlash whitespace  simplifiedContents whitespace  slashTildeRight whitespace 
     ;
 
 simplifiedDefaultingLeftOrRight
-    = leftMinusSlash simplifiedContents slashMinusRight
+    =  whitespace leftMinusSlash whitespace  simplifiedContents whitespace  slashMinusRight whitespace 
     ;
 
 simplifiedDefaultingAnyDirection
-    = minusSlash simplifiedContents slashMinus
+    =  whitespace minusSlash whitespace  simplifiedContents whitespace  slashMinus whitespace 
     ;
 
 simplifiedContents
@@ -1119,11 +1119,11 @@ simplifiedContents
     ;
 
 simplifiedPathUnion
-    = simplifiedTerm verticalBar simplifiedTerm ((verticalBar simplifiedTerm)+)?
+    = simplifiedTerm whitespace  verticalBar whitespace  simplifiedTerm (( whitespace verticalBar whitespace  simplifiedTerm)+)?
     ;
 
 simplifiedMultisetAlternation
-    = simplifiedTerm multisetAlternationOperator simplifiedTerm ((multisetAlternationOperator simplifiedTerm)+)?
+    = simplifiedTerm whitespace  multisetAlternationOperator whitespace  simplifiedTerm (( whitespace multisetAlternationOperator whitespace  simplifiedTerm)+)?
     ;
 
 simplifiedTerm
@@ -1141,7 +1141,7 @@ simplifiedFactorLow
     ;
 
 simplifiedConjunction
-    = simplifiedFactorLow ampersand simplifiedFactorHigh
+    = simplifiedFactorLow whitespace  ampersand whitespace  simplifiedFactorHigh
     ;
 
 simplifiedFactorHigh
@@ -1155,7 +1155,7 @@ simplifiedQuantified
     ;
 
 simplifiedQuestioned
-    = simplifiedTertiary questionMark
+    = simplifiedTertiary whitespace  questionMark whitespace 
     ;
 
 simplifiedTertiary
@@ -1174,31 +1174,31 @@ simplifiedDirectionOverride
     ;
 
 simplifiedOverrideLeft
-    = leftAngleBracket simplifiedSecondary
+    =  whitespace leftAngleBracket whitespace  simplifiedSecondary
     ;
 
 simplifiedOverrideUndirected
-    = tilde simplifiedSecondary
+    =  whitespace tilde whitespace  simplifiedSecondary
     ;
 
 simplifiedOverrideRight
-    = simplifiedSecondary rightAngleBracket
+    = simplifiedSecondary whitespace  rightAngleBracket whitespace 
     ;
 
 simplifiedOverrideLeftOrUndirected
-    = leftArrowTilde simplifiedSecondary
+    =  whitespace leftArrowTilde whitespace  simplifiedSecondary
     ;
 
 simplifiedOverrideUndirectedOrRight
-    = tilde simplifiedSecondary rightAngleBracket
+    =  whitespace tilde whitespace  simplifiedSecondary whitespace  rightAngleBracket whitespace 
     ;
 
 simplifiedOverrideLeftOrRight
-    = leftAngleBracket simplifiedSecondary rightAngleBracket
+    =  whitespace leftAngleBracket whitespace  simplifiedSecondary whitespace  rightAngleBracket whitespace 
     ;
 
 simplifiedOverrideAnyDirection
-    = minusSign simplifiedSecondary
+    =  whitespace minusSign whitespace  simplifiedSecondary
     ;
 
 simplifiedSecondary
@@ -1207,12 +1207,12 @@ simplifiedSecondary
     ;
 
 simplifiedNegation
-    = exclamationMark simplifiedPrimary
+    =  whitespace exclamationMark whitespace  simplifiedPrimary
     ;
 
 simplifiedPrimary
     = labelName
-    | leftParen simplifiedContents rightParen
+    |  whitespace leftParen whitespace  simplifiedContents whitespace  rightParen whitespace 
     ;
 
 whereClause
@@ -1224,7 +1224,7 @@ yieldClause
     ;
 
 yieldItemList
-    = yieldItem ((comma yieldItem)+)?
+    = yieldItem (( whitespace comma whitespace  yieldItem)+)?
     ;
 
 yieldItem
@@ -1244,7 +1244,7 @@ groupByClause
     ;
 
 groupingElementList
-    = groupingElement ((comma groupingElement)+)?
+    = groupingElement (( whitespace comma whitespace  groupingElement)+)?
     | emptyGroupingSet
     ;
 
@@ -1253,7 +1253,7 @@ groupingElement
     ;
 
 emptyGroupingSet
-    = leftParen rightParen
+    =  whitespace leftParen whitespace  whitespace  rightParen whitespace 
     ;
 
 orderByClause
@@ -1261,7 +1261,7 @@ orderByClause
     ;
 
 sortSpecificationList
-    = sortSpecification ((comma sortSpecification)+)?
+    = sortSpecification (( whitespace comma whitespace  sortSpecification)+)?
     ;
 
 sortSpecification
@@ -1304,7 +1304,7 @@ schemaReference
     ;
 
 absoluteCatalogSchemaReference
-    = solidus
+    =  whitespace solidus whitespace 
     | absoluteDirectoryPath schemaName
     ;
 
@@ -1320,19 +1320,19 @@ relativeCatalogSchemaReference
 predefinedSchemaReference
     = " HOME_SCHEMA "
     | " CURRENT_SCHEMA "
-    | period
+    |  whitespace period whitespace 
     ;
 
 absoluteDirectoryPath
-    = solidus simpleDirectoryPath?
+    =  whitespace solidus whitespace  simpleDirectoryPath?
     ;
 
 relativeDirectoryPath
-    = doublePeriod ((solidus doublePeriod)+ solidus simpleDirectoryPath?)?
+    =  whitespace doublePeriod whitespace  (( whitespace solidus whitespace  whitespace  doublePeriod whitespace )+ whitespace  solidus whitespace  simpleDirectoryPath?)?
     ;
 
 simpleDirectoryPath
-    = (directoryName solidus)+
+    = (directoryName whitespace  solidus whitespace )+
     ;
 
 graphReference
@@ -1376,8 +1376,8 @@ catalogProcedureParentAndName
     ;
 
 catalogObjectParentReference
-    = schemaReference solidus? ((objectName period)+)?
-    | (objectName period)+
+    = schemaReference  whitespace solidus whitespace ? ((objectName whitespace  period whitespace )+)?
+    | (objectName whitespace  period whitespace )+
     ;
 
 referenceParameterSpecification
@@ -1385,7 +1385,7 @@ referenceParameterSpecification
     ;
 
 nestedGraphTypeSpecification
-    = leftBrace graphTypeSpecificationBody rightBrace
+    =  whitespace leftBrace whitespace  graphTypeSpecificationBody whitespace  rightBrace whitespace 
     ;
 
 graphTypeSpecificationBody
@@ -1393,7 +1393,7 @@ graphTypeSpecificationBody
     ;
 
 elementTypeList
-    = elementTypeSpecification ((comma elementTypeSpecification)+)?
+    = elementTypeSpecification (( whitespace comma whitespace  elementTypeSpecification)+)?
     ;
 
 elementTypeSpecification
@@ -1407,7 +1407,7 @@ nodeTypeSpecification
     ;
 
 nodeTypePattern
-    = (nodeSynonym " TYPE "? nodeTypeName)? leftParen localNodeTypeAlias? nodeTypeFiller? rightParen
+    = (nodeSynonym " TYPE "? nodeTypeName)? whitespace  leftParen whitespace  localNodeTypeAlias? nodeTypeFiller? whitespace  rightParen whitespace 
     ;
 
 nodeTypePhrase
@@ -1505,25 +1505,25 @@ edgeTypePatternUndirected
     ;
 
 arcTypePointingRight
-    = minusLeftBracket edgeTypeFiller bracketRightArrow
+    =  whitespace minusLeftBracket whitespace  edgeTypeFiller whitespace  bracketRightArrow whitespace 
     ;
 
 arcTypePointingLeft
-    = leftArrowBracket edgeTypeFiller rightBracketMinus
+    =  whitespace leftArrowBracket whitespace  edgeTypeFiller whitespace  rightBracketMinus whitespace 
     ;
 
 arcTypeUndirected
-    = tildeLeftBracket edgeTypeFiller rightBracketTilde
+    =  whitespace tildeLeftBracket whitespace  edgeTypeFiller whitespace  rightBracketTilde whitespace 
     ;
 
 sourceNodeTypeReference
-    = leftParen sourceNodeTypeAlias rightParen
-    | leftParen nodeTypeFiller? rightParen
+    =  whitespace leftParen whitespace  sourceNodeTypeAlias whitespace  rightParen whitespace 
+    |  whitespace leftParen whitespace  nodeTypeFiller? whitespace  rightParen whitespace 
     ;
 
 destinationNodeTypeReference
-    = leftParen destinationNodeTypeAlias rightParen
-    | leftParen nodeTypeFiller? rightParen
+    =  whitespace leftParen whitespace  destinationNodeTypeAlias whitespace  rightParen whitespace 
+    |  whitespace leftParen whitespace  nodeTypeFiller? whitespace  rightParen whitespace 
     ;
 
 edgeKind
@@ -1546,25 +1546,25 @@ endpointPairDirected
     ;
 
 endpointPairPointingRight
-    = leftParen sourceNodeTypeAlias connectorPointingRight destinationNodeTypeAlias rightParen
+    =  whitespace leftParen whitespace  sourceNodeTypeAlias connectorPointingRight destinationNodeTypeAlias whitespace  rightParen whitespace 
     ;
 
 endpointPairPointingLeft
-    = leftParen destinationNodeTypeAlias leftArrow sourceNodeTypeAlias rightParen
+    =  whitespace leftParen whitespace  destinationNodeTypeAlias whitespace  leftArrow whitespace  sourceNodeTypeAlias whitespace  rightParen whitespace 
     ;
 
 endpointPairUndirected
-    = leftParen sourceNodeTypeAlias connectorUndirected destinationNodeTypeAlias rightParen
+    =  whitespace leftParen whitespace  sourceNodeTypeAlias connectorUndirected destinationNodeTypeAlias whitespace  rightParen whitespace 
     ;
 
 connectorPointingRight
     = " TO "
-    | rightArrow
+    |  whitespace rightArrow whitespace 
     ;
 
 connectorUndirected
     = " TO "
-    | tilde
+    |  whitespace tilde whitespace 
     ;
 
 sourceNodeTypeAlias
@@ -1582,15 +1582,15 @@ labelSetPhrase
     ;
 
 labelSetSpecification
-    = labelName ((ampersand labelName)+)?
+    = labelName (( whitespace ampersand whitespace  labelName)+)?
     ;
 
 propertyTypesSpecification
-    = leftBrace propertyTypeList? rightBrace
+    =  whitespace leftBrace whitespace  propertyTypeList? whitespace  rightBrace whitespace 
     ;
 
 propertyTypeList
-    = propertyType ((comma propertyType)+)?
+    = propertyType (( whitespace comma whitespace  propertyType)+)?
     ;
 
 propertyType
@@ -1612,7 +1612,7 @@ valueType
     ;
 
 typed
-    = doubleColon
+    =  whitespace doubleColon whitespace 
     | " TYPED "
     ;
 
@@ -1631,15 +1631,15 @@ booleanType
     ;
 
 characterStringType
-    = " STRING " (leftParen (minLength comma)? maxLength rightParen)? notNull?
-    | " CHAR " (leftParen fixedLength rightParen)? notNull?
-    | " VARCHAR " (leftParen maxLength rightParen)? notNull?
+    = " STRING " ( whitespace leftParen whitespace  (minLength whitespace  comma whitespace )? maxLength whitespace  rightParen whitespace )? notNull?
+    | " CHAR " ( whitespace leftParen whitespace  fixedLength whitespace  rightParen whitespace )? notNull?
+    | " VARCHAR " ( whitespace leftParen whitespace  maxLength whitespace  rightParen whitespace )? notNull?
     ;
 
 byteStringType
-    = " BYTES " (leftParen (minLength comma)? maxLength rightParen)? notNull?
-    | " BINARY " (leftParen fixedLength rightParen)? notNull?
-    | " VARBINARY " (leftParen maxLength rightParen)? notNull?
+    = " BYTES " ( whitespace leftParen whitespace  (minLength whitespace  comma whitespace )? maxLength whitespace  rightParen whitespace )? notNull?
+    | " BINARY " ( whitespace leftParen whitespace  fixedLength whitespace  rightParen whitespace )? notNull?
+    | " VARBINARY " ( whitespace leftParen whitespace  maxLength whitespace  rightParen whitespace )? notNull?
     ;
 
 minLength
@@ -1677,7 +1677,7 @@ signedBinaryExactNumericType
     | " INT128 " notNull?
     | " INT256 " notNull?
     | " SMALLINT " notNull?
-    | " INT " (leftParen precision rightParen)? notNull?
+    | " INT " ( whitespace leftParen whitespace  precision whitespace  rightParen whitespace )? notNull?
     | " BIGINT " notNull?
     | " SIGNED "? verboseBinaryExactNumericType
     ;
@@ -1690,7 +1690,7 @@ unsignedBinaryExactNumericType
     | " UINT128 " notNull?
     | " UINT256 " notNull?
     | " USMALLINT " notNull?
-    | " UINT " (leftParen precision rightParen)? notNull?
+    | " UINT " ( whitespace leftParen whitespace  precision whitespace  rightParen whitespace )? notNull?
     | " UBIGINT " notNull?
     | " UNSIGNED " verboseBinaryExactNumericType
     ;
@@ -1703,12 +1703,12 @@ verboseBinaryExactNumericType
     | " INTEGER128 " notNull?
     | " INTEGER256 " notNull?
     | " SMALL " " INTEGER " notNull?
-    | " INTEGER " (leftParen precision rightParen)? notNull?
+    | " INTEGER " ( whitespace leftParen whitespace  precision whitespace  rightParen whitespace )? notNull?
     | " BIG " " INTEGER " notNull?
     ;
 
 decimalExactNumericType
-    = (" DECIMAL " | " DEC ") (leftParen precision (comma scale)? rightParen notNull?)?
+    = (" DECIMAL " | " DEC ") ( whitespace leftParen whitespace  precision ( whitespace comma whitespace  scale)? whitespace  rightParen whitespace  notNull?)?
     ;
 
 precision
@@ -1725,7 +1725,7 @@ approximateNumericType
     | " FLOAT64 " notNull?
     | " FLOAT128 " notNull?
     | " FLOAT256 " notNull?
-    | " FLOAT " (leftParen precision (comma scale)? rightParen)? notNull?
+    | " FLOAT " ( whitespace leftParen whitespace  precision ( whitespace comma whitespace  scale)? whitespace  rightParen whitespace )? notNull?
     | " REAL " notNull?
     | " DOUBLE " " PRECISION "? notNull?
     ;
@@ -1768,7 +1768,7 @@ localtimeType
     ;
 
 temporalDurationType
-    = " DURATION " leftParen temporalDurationQualifier rightParen notNull?
+    = " DURATION " whitespace  leftParen whitespace  temporalDurationQualifier whitespace  rightParen whitespace  notNull?
     ;
 
 temporalDurationQualifier
@@ -1851,7 +1851,7 @@ pathValueType
     ;
 
 listValueType
-    = (listValueTypeName leftAngleBracket valueType rightAngleBracket | valueType? listValueTypeName) (leftBracket maxLength rightBracket)? notNull?
+    = (listValueTypeName whitespace  leftAngleBracket whitespace  valueType whitespace  rightAngleBracket whitespace  | valueType? listValueTypeName) ( whitespace leftBracket whitespace  maxLength whitespace  rightBracket whitespace )? notNull?
     ;
 
 listValueTypeName
@@ -1869,11 +1869,11 @@ recordType
     ;
 
 fieldTypesSpecification
-    = leftBrace fieldTypeList? rightBrace
+    =  whitespace leftBrace whitespace  fieldTypeList? whitespace  rightBrace whitespace 
     ;
 
 fieldTypeList
-    = fieldType ((comma fieldType)+)?
+    = fieldType (( whitespace comma whitespace  fieldType)+)?
     ;
 
 dynamicUnionType
@@ -1891,12 +1891,12 @@ dynamicPropertyValueType
     ;
 
 closedDynamicUnionType
-    = " ANY " " VALUE "? leftAngleBracket componentTypeList rightAngleBracket
+    = " ANY " " VALUE "? whitespace  leftAngleBracket whitespace  componentTypeList whitespace  rightAngleBracket whitespace 
     | componentTypeList
     ;
 
 componentTypeList
-    = componentType ((verticalBar componentType)+)?
+    = componentType (( whitespace verticalBar whitespace  componentType)+)?
     ;
 
 componentType
@@ -1938,12 +1938,12 @@ comparisonPredicatePart2
     ;
 
 compOp
-    = equalsOperator
-    | notEqualsOperator
+    =  whitespace equalsOperator whitespace 
+    |  whitespace notEqualsOperator whitespace 
     | lessThanOperator
     | greaterThanOperator
-    | lessThanOrEqualsOperator
-    | greaterThanOrEqualsOperator
+    |  whitespace lessThanOrEqualsOperator whitespace 
+    |  whitespace greaterThanOrEqualsOperator whitespace 
     ;
 
 comparisonPredicand
@@ -1952,7 +1952,7 @@ comparisonPredicand
     ;
 
 existsPredicate
-    = " EXISTS " (leftBrace graphPattern rightBrace | leftParen graphPattern rightParen | leftBrace matchStatementBlock rightBrace | leftParen matchStatementBlock rightParen | nestedQuerySpecification)
+    = " EXISTS " ( whitespace leftBrace whitespace  graphPattern whitespace  rightBrace whitespace  |  whitespace leftParen whitespace  graphPattern whitespace  rightParen whitespace  |  whitespace leftBrace whitespace  matchStatementBlock whitespace  rightBrace whitespace  |  whitespace leftParen whitespace  matchStatementBlock whitespace  rightParen whitespace  | nestedQuerySpecification)
     ;
 
 nullPredicate
@@ -1997,7 +1997,7 @@ labeledPredicatePart2
 
 isLabeledOrColon
     = " IS " " NOT "? " LABELED "
-    | colon
+    |  whitespace colon whitespace 
     ;
 
 sourceDestinationPredicate
@@ -2022,15 +2022,15 @@ edgeReference
     ;
 
 all_differentPredicate
-    = " ALL_DIFFERENT " leftParen elementVariableReference comma elementVariableReference ((comma elementVariableReference)+)? rightParen
+    = " ALL_DIFFERENT " whitespace  leftParen whitespace  elementVariableReference whitespace  comma whitespace  elementVariableReference (( whitespace comma whitespace  elementVariableReference)+)? whitespace  rightParen whitespace 
     ;
 
 samePredicate
-    = " SAME " leftParen elementVariableReference comma elementVariableReference ((comma elementVariableReference)+)? rightParen
+    = " SAME " whitespace  leftParen whitespace  elementVariableReference whitespace  comma whitespace  elementVariableReference (( whitespace comma whitespace  elementVariableReference)+)? whitespace  rightParen whitespace 
     ;
 
 property_existsPredicate
-    = " PROPERTY_EXISTS " leftParen elementVariableReference comma propertyName rightParen
+    = " PROPERTY_EXISTS " whitespace  leftParen whitespace  elementVariableReference whitespace  comma whitespace  propertyName whitespace  rightParen whitespace 
     ;
 
 valueExpression
@@ -2088,7 +2088,7 @@ valueExpressionPrimary
     ;
 
 parenthesizedValueExpression
-    = leftParen valueExpression rightParen
+    =  whitespace leftParen whitespace  valueExpression whitespace  rightParen whitespace 
     ;
 
 nonParenthesizedValueExpressionPrimary
@@ -2143,8 +2143,8 @@ caseExpression
     ;
 
 caseAbbreviation
-    = " NULLIF " leftParen valueExpression comma valueExpression rightParen
-    | " COALESCE " leftParen valueExpression (comma valueExpression)+ rightParen
+    = " NULLIF " whitespace  leftParen whitespace  valueExpression whitespace  comma whitespace  valueExpression whitespace  rightParen whitespace 
+    | " COALESCE " whitespace  leftParen whitespace  valueExpression ( whitespace comma whitespace  valueExpression)+ whitespace  rightParen whitespace 
     ;
 
 caseSpecification
@@ -2178,7 +2178,7 @@ caseOperand
     ;
 
 whenOperandList
-    = whenOperand ((comma whenOperand)+)?
+    = whenOperand (( whitespace comma whitespace  whenOperand)+)?
     ;
 
 whenOperand
@@ -2203,7 +2203,7 @@ resultExpression
     ;
 
 castSpecification
-    = " CAST " leftParen castOperand " AS " castTarget rightParen
+    = " CAST " whitespace  leftParen whitespace  castOperand " AS " castTarget whitespace  rightParen whitespace 
     ;
 
 castOperand
@@ -2216,17 +2216,17 @@ castTarget
     ;
 
 aggregateFunction
-    = " COUNT " leftParen asterisk rightParen
+    = " COUNT " whitespace  leftParen whitespace  whitespace  asterisk whitespace  whitespace  rightParen whitespace 
     | generalSetFunction
     | binarySetFunction
     ;
 
 generalSetFunction
-    = generalSetFunctionType leftParen setQuantifier? valueExpression rightParen
+    = generalSetFunctionType whitespace  leftParen whitespace  setQuantifier? valueExpression whitespace  rightParen whitespace 
     ;
 
 binarySetFunction
-    = binarySetFunctionType leftParen dependentValueExpression comma independentValueExpression rightParen
+    = binarySetFunctionType whitespace  leftParen whitespace  dependentValueExpression whitespace  comma whitespace  independentValueExpression whitespace  rightParen whitespace 
     ;
 
 generalSetFunctionType
@@ -2259,11 +2259,11 @@ independentValueExpression
     ;
 
 element_idFunction
-    = " ELEMENT_ID " leftParen elementVariableReference rightParen
+    = " ELEMENT_ID " whitespace  leftParen whitespace  elementVariableReference whitespace  rightParen whitespace 
     ;
 
 propertyReference
-    = propertySource period propertyName
+    = propertySource whitespace  period whitespace  propertyName
     ;
 
 propertySource
@@ -2282,7 +2282,7 @@ pathValueExpression
     ;
 
 pathValueConcatenation
-    = pathValueExpression1 concatenationOperator pathValuePrimary
+    = pathValueExpression1 whitespace  concatenationOperator whitespace  pathValuePrimary
     ;
 
 pathValueExpression1
@@ -2298,7 +2298,7 @@ pathValueConstructor
     ;
 
 pathValueConstructorByEnumeration
-    = " PATH " leftBracket pathElementList rightBracket
+    = " PATH " whitespace  leftBracket whitespace  pathElementList whitespace  rightBracket whitespace 
     ;
 
 pathElementList
@@ -2310,7 +2310,7 @@ pathElementListStart
     ;
 
 pathElementListStep
-    = comma edgeReferenceValueExpression comma nodeReferenceValueExpression
+    =  whitespace comma whitespace  edgeReferenceValueExpression whitespace  comma whitespace  nodeReferenceValueExpression
     ;
 
 listValueExpression
@@ -2319,7 +2319,7 @@ listValueExpression
     ;
 
 listConcatenation
-    = listValueExpression1 concatenationOperator listPrimary
+    = listValueExpression1 whitespace  concatenationOperator whitespace  listPrimary
     ;
 
 listValueExpression1
@@ -2337,11 +2337,11 @@ listValueFunction
     ;
 
 trimListFunction
-    = " TRIM " leftParen listValueExpression comma numericValueExpression rightParen
+    = " TRIM " whitespace  leftParen whitespace  listValueExpression whitespace  comma whitespace  numericValueExpression whitespace  rightParen whitespace 
     ;
 
 elementsFunction
-    = " ELEMENTS " leftParen pathValueExpression rightParen
+    = " ELEMENTS " whitespace  leftParen whitespace  pathValueExpression whitespace  rightParen whitespace 
     ;
 
 listValueConstructor
@@ -2349,11 +2349,11 @@ listValueConstructor
     ;
 
 listValueConstructorByEnumeration
-    = listValueTypeName? leftBracket listElementList? rightBracket
+    = listValueTypeName? whitespace  leftBracket whitespace  listElementList? whitespace  rightBracket whitespace 
     ;
 
 listElementList
-    = listElement ((comma listElement)+)?
+    = listElement (( whitespace comma whitespace  listElement)+)?
     ;
 
 listElement
@@ -2365,15 +2365,15 @@ recordConstructor
     ;
 
 fieldsSpecification
-    = leftBrace fieldList? rightBrace
+    =  whitespace leftBrace whitespace  fieldList? whitespace  rightBrace whitespace 
     ;
 
 fieldList
-    = field ((comma field)+)?
+    = field (( whitespace comma whitespace  field)+)?
     ;
 
 field
-    = fieldName colon valueExpression
+    = fieldName whitespace  colon whitespace  valueExpression
     ;
 
 booleanValueExpression
@@ -2412,19 +2412,19 @@ booleanPredicand
     ;
 
 parenthesizedBooleanValueExpression
-    = leftParen booleanValueExpression rightParen
+    =  whitespace leftParen whitespace  booleanValueExpression whitespace  rightParen whitespace 
     ;
 
 numericValueExpression
     = term
-    | numericValueExpression plusSign term
-    | numericValueExpression minusSign term
+    | numericValueExpression whitespace  plusSign whitespace  term
+    | numericValueExpression whitespace  minusSign whitespace  term
     ;
 
 term
     = factor
-    | term asterisk factor
-    | term solidus factor
+    | term whitespace  asterisk whitespace  factor
+    | term whitespace  solidus whitespace  factor
     ;
 
 factor
@@ -2459,8 +2459,8 @@ lengthExpression
     ;
 
 cardinalityExpression
-    = " CARDINALITY " leftParen cardinalityExpressionArgument rightParen
-    | " SIZE " leftParen listValueExpression rightParen
+    = " CARDINALITY " whitespace  leftParen whitespace  cardinalityExpressionArgument whitespace  rightParen whitespace 
+    | " SIZE " whitespace  leftParen whitespace  listValueExpression whitespace  rightParen whitespace 
     ;
 
 cardinalityExpressionArgument
@@ -2471,23 +2471,23 @@ cardinalityExpressionArgument
     ;
 
 charLengthExpression
-    = (" CHAR_LENGTH " | " CHARACTER_LENGTH ") leftParen characterStringValueExpression rightParen
+    = (" CHAR_LENGTH " | " CHARACTER_LENGTH ") whitespace  leftParen whitespace  characterStringValueExpression whitespace  rightParen whitespace 
     ;
 
 byteLengthExpression
-    = (" BYTE_LENGTH " | " OCTET_LENGTH ") leftParen byteStringValueExpression rightParen
+    = (" BYTE_LENGTH " | " OCTET_LENGTH ") whitespace  leftParen whitespace  byteStringValueExpression whitespace  rightParen whitespace 
     ;
 
 pathLengthExpression
-    = " PATH_LENGTH " leftParen pathValueExpression rightParen
+    = " PATH_LENGTH " whitespace  leftParen whitespace  pathValueExpression whitespace  rightParen whitespace 
     ;
 
 absoluteValueExpression
-    = " ABS " leftParen numericValueExpression rightParen
+    = " ABS " whitespace  leftParen whitespace  numericValueExpression whitespace  rightParen whitespace 
     ;
 
 modulusExpression
-    = " MOD " leftParen numericValueExpressionDividend comma numericValueExpressionDivisor rightParen
+    = " MOD " whitespace  leftParen whitespace  numericValueExpressionDividend whitespace  comma whitespace  numericValueExpressionDivisor whitespace  rightParen whitespace 
     ;
 
 numericValueExpressionDividend
@@ -2499,7 +2499,7 @@ numericValueExpressionDivisor
     ;
 
 trigonometricFunction
-    = trigonometricFunctionName leftParen numericValueExpression rightParen
+    = trigonometricFunctionName whitespace  leftParen whitespace  numericValueExpression whitespace  rightParen whitespace 
     ;
 
 trigonometricFunctionName
@@ -2518,7 +2518,7 @@ trigonometricFunctionName
     ;
 
 generalLogarithmFunction
-    = " LOG " leftParen generalLogarithmBase comma generalLogarithmArgument rightParen
+    = " LOG " whitespace  leftParen whitespace  generalLogarithmBase whitespace  comma whitespace  generalLogarithmArgument whitespace  rightParen whitespace 
     ;
 
 generalLogarithmBase
@@ -2530,19 +2530,19 @@ generalLogarithmArgument
     ;
 
 commonLogarithm
-    = " LOG10 " leftParen numericValueExpression rightParen
+    = " LOG10 " whitespace  leftParen whitespace  numericValueExpression whitespace  rightParen whitespace 
     ;
 
 naturalLogarithm
-    = " LN " leftParen numericValueExpression rightParen
+    = " LN " whitespace  leftParen whitespace  numericValueExpression whitespace  rightParen whitespace 
     ;
 
 exponentialFunction
-    = " EXP " leftParen numericValueExpression rightParen
+    = " EXP " whitespace  leftParen whitespace  numericValueExpression whitespace  rightParen whitespace 
     ;
 
 powerFunction
-    = " POWER " leftParen numericValueExpressionBase comma numericValueExpressionExponent rightParen
+    = " POWER " whitespace  leftParen whitespace  numericValueExpressionBase whitespace  comma whitespace  numericValueExpressionExponent whitespace  rightParen whitespace 
     ;
 
 numericValueExpressionBase
@@ -2554,15 +2554,15 @@ numericValueExpressionExponent
     ;
 
 squareRoot
-    = " SQRT " leftParen numericValueExpression rightParen
+    = " SQRT " whitespace  leftParen whitespace  numericValueExpression whitespace  rightParen whitespace 
     ;
 
 floorFunction
-    = " FLOOR " leftParen numericValueExpression rightParen
+    = " FLOOR " whitespace  leftParen whitespace  numericValueExpression whitespace  rightParen whitespace 
     ;
 
 ceilingFunction
-    = (" CEIL " | " CEILING ") leftParen numericValueExpression rightParen
+    = (" CEIL " | " CEILING ") whitespace  leftParen whitespace  numericValueExpression whitespace  rightParen whitespace 
     ;
 
 stringValueExpression
@@ -2576,7 +2576,7 @@ characterStringValueExpression
     ;
 
 characterStringConcatenation
-    = characterStringValueExpression concatenationOperator characterStringPrimary
+    = characterStringValueExpression whitespace  concatenationOperator whitespace  characterStringPrimary
     ;
 
 characterStringPrimary
@@ -2595,7 +2595,7 @@ byteStringPrimary
     ;
 
 byteStringConcatenation
-    = byteStringValueExpression concatenationOperator byteStringPrimary
+    = byteStringValueExpression whitespace  concatenationOperator whitespace  byteStringPrimary
     ;
 
 characterStringFunction
@@ -2606,11 +2606,11 @@ characterStringFunction
     ;
 
 substringFunction
-    = (" LEFT " | " RIGHT ") leftParen characterStringValueExpression comma stringLength rightParen
+    = (" LEFT " | " RIGHT ") whitespace  leftParen whitespace  characterStringValueExpression whitespace  comma whitespace  stringLength whitespace  rightParen whitespace 
     ;
 
 fold
-    = (" UPPER " | " LOWER ") leftParen characterStringValueExpression rightParen
+    = (" UPPER " | " LOWER ") whitespace  leftParen whitespace  characterStringValueExpression whitespace  rightParen whitespace 
     ;
 
 trimFunction
@@ -2619,11 +2619,11 @@ trimFunction
     ;
 
 singleCharacterTrimFunction
-    = " TRIM " leftParen trimOperands rightParen
+    = " TRIM " whitespace  leftParen whitespace  trimOperands whitespace  rightParen whitespace 
     ;
 
 multiCharacterTrimFunction
-    = (" BTRIM " | " LTRIM " | " RTRIM ") leftParen trimSource (comma trimCharacterString)? rightParen
+    = (" BTRIM " | " LTRIM " | " RTRIM ") whitespace  leftParen whitespace  trimSource ( whitespace comma whitespace  trimCharacterString)? whitespace  rightParen whitespace 
     ;
 
 trimOperands
@@ -2645,7 +2645,7 @@ trimCharacterString
     ;
 
 normalizeFunction
-    = " NORMALIZE " leftParen characterStringValueExpression (comma normalForm)? rightParen
+    = " NORMALIZE " whitespace  leftParen whitespace  characterStringValueExpression ( whitespace comma whitespace  normalForm)? whitespace  rightParen whitespace 
     ;
 
 normalForm
@@ -2665,11 +2665,11 @@ byteStringFunction
     ;
 
 byteStringSubstringFunction
-    = (" LEFT " | " RIGHT ") leftParen byteStringValueExpression comma stringLength rightParen
+    = (" LEFT " | " RIGHT ") whitespace  leftParen whitespace  byteStringValueExpression whitespace  comma whitespace  stringLength whitespace  rightParen whitespace 
     ;
 
 byteStringTrimFunction
-    = " TRIM " leftParen byteStringTrimOperands rightParen
+    = " TRIM " whitespace  leftParen whitespace  byteStringTrimOperands whitespace  rightParen whitespace 
     ;
 
 byteStringTrimOperands
@@ -2686,9 +2686,9 @@ trimByteString
 
 datetimeValueExpression
     = datetimePrimary
-    | durationValueExpression plusSign datetimePrimary
-    | datetimeValueExpression plusSign durationTerm
-    | datetimeValueExpression minusSign durationTerm
+    | durationValueExpression whitespace  plusSign whitespace  datetimePrimary
+    | datetimeValueExpression whitespace  plusSign whitespace  durationTerm
+    | datetimeValueExpression whitespace  minusSign whitespace  durationTerm
     ;
 
 datetimePrimary
@@ -2706,26 +2706,26 @@ datetimeValueFunction
 
 dateFunction
     = " CURRENT_DATE "
-    | " DATE " leftParen dateFunctionParameters? rightParen
+    | " DATE " whitespace  leftParen whitespace  dateFunctionParameters? whitespace  rightParen whitespace 
     ;
 
 timeFunction
     = " CURRENT_TIME "
-    | " ZONED_TIME " leftParen timeFunctionParameters? rightParen
+    | " ZONED_TIME " whitespace  leftParen whitespace  timeFunctionParameters? whitespace  rightParen whitespace 
     ;
 
 localtimeFunction
-    = " LOCAL_TIME " (leftParen timeFunctionParameters? rightParen)?
+    = " LOCAL_TIME " ( whitespace leftParen whitespace  timeFunctionParameters? whitespace  rightParen whitespace )?
     ;
 
 datetimeFunction
     = " CURRENT_TIMESTAMP "
-    | " ZONED_DATETIME " leftParen datetimeFunctionParameters? rightParen
+    | " ZONED_DATETIME " whitespace  leftParen whitespace  datetimeFunctionParameters? whitespace  rightParen whitespace 
     ;
 
 localdatetimeFunction
     = " LOCAL_TIMESTAMP "
-    | " LOCAL_DATETIME " leftParen datetimeFunctionParameters? rightParen
+    | " LOCAL_DATETIME " whitespace  leftParen whitespace  datetimeFunctionParameters? whitespace  rightParen whitespace 
     ;
 
 dateFunctionParameters
@@ -2750,23 +2750,23 @@ durationValueExpression
     ;
 
 durationAdditionAndSubtraction
-    = durationValueExpression1 plusSign durationTerm1
-    | durationValueExpression1 minusSign durationTerm1
+    = durationValueExpression1 whitespace  plusSign whitespace  durationTerm1
+    | durationValueExpression1 whitespace  minusSign whitespace  durationTerm1
     ;
 
 datetimeSubtraction
-    = " DURATION_BETWEEN " leftParen datetimeSubtractionParameters rightParen temporalDurationQualifier?
+    = " DURATION_BETWEEN " whitespace  leftParen whitespace  datetimeSubtractionParameters whitespace  rightParen whitespace  temporalDurationQualifier?
     ;
 
 datetimeSubtractionParameters
-    = datetimeValueExpression1 comma datetimeValueExpression2
+    = datetimeValueExpression1 whitespace  comma whitespace  datetimeValueExpression2
     ;
 
 durationTerm
     = durationFactor
-    | durationTerm2 asterisk factor
-    | durationTerm2 solidus factor
-    | term asterisk durationFactor
+    | durationTerm2 whitespace  asterisk whitespace  factor
+    | durationTerm2 whitespace  solidus whitespace  factor
+    | term whitespace  asterisk whitespace  durationFactor
     ;
 
 durationFactor
@@ -2804,7 +2804,7 @@ durationValueFunction
     ;
 
 durationFunction
-    = " DURATION " leftParen durationFunctionParameters rightParen
+    = " DURATION " whitespace  leftParen whitespace  durationFunctionParameters whitespace  rightParen whitespace 
     ;
 
 durationFunctionParameters
@@ -2813,7 +2813,7 @@ durationFunctionParameters
     ;
 
 durationAbsoluteValueFunction
-    = " ABS " leftParen durationValueExpression rightParen
+    = " ABS " whitespace  leftParen whitespace  durationValueExpression whitespace  rightParen whitespace 
     ;
 
 objectName
@@ -2938,19 +2938,19 @@ accentQuotedCharacterSequence
     ;
 
 noEscape
-    = commercialAt
+    =  commercialAt
     ;
 
 unbrokenSingleQuotedCharacterSequence
-    = quote (singleQuotedCharacterRepresentation+)? quote
+    =   quote (singleQuotedCharacterRepresentation+)? quote whitespace 
     ;
 
 unbrokenDoubleQuotedCharacterSequence
-    = doubleQuote (doubleQuotedCharacterRepresentation+)? doubleQuote
+    =   doubleQuote (doubleQuotedCharacterRepresentation+)? doubleQuote whitespace 
     ;
 
 unbrokenAccentQuotedCharacterSequence
-    = graveAccent (accentQuotedCharacterRepresentation+)? graveAccent
+    =   graveAccent  (accentQuotedCharacterRepresentation+)? graveAccent whitespace 
     ;
 
 singleQuotedCharacterRepresentation
@@ -2970,12 +2970,12 @@ characterRepresentation
     ;
 
 byteStringLiteral
-    = "X" quote (space+)? ((hexDigit (space+)? hexDigit (space+)?)+)? quote ((separator quote (space+)? ((hexDigit (space+)? hexDigit (space+)?)+)? quote)+)?
+    = "X" quote hexDigit hexDigit quote
     ;
 
 sign
-    = plusSign
-    | minusSign
+    =  whitespace plusSign whitespace 
+    |  whitespace minusSign whitespace 
     ;
 
 unsignedNumericLiteral
@@ -2984,9 +2984,9 @@ unsignedNumericLiteral
     ;
 
 exactNumericLiteral
-    = unsignedDecimalInScientificNotation exactNumberSuffix
-    | unsignedDecimalInCommonNotation exactNumberSuffix?
-    | unsignedDecimalInteger exactNumberSuffix
+    = unsignedDecimalInScientificNotation exactNumberSuffix whitespace 
+    | unsignedDecimalInCommonNotation exactNumberSuffix whitespace ?
+    | unsignedDecimalInteger exactNumberSuffix whitespace 
     | unsignedInteger
     ;
 
@@ -3008,8 +3008,8 @@ exponent
     ;
 
 unsignedDecimalInCommonNotation
-    = unsignedDecimalInteger (period unsignedDecimalInteger?)
-    | period unsignedDecimalInteger
+    = unsignedDecimalInteger (  period   unsignedDecimalInteger?)
+    |  whitespace period  unsignedDecimalInteger
     ;
 
 unsignedInteger
@@ -3024,19 +3024,19 @@ signedDecimalInteger
     ;
 
 unsignedDecimalInteger
-    = digit ((underscore? digit)+)?
+    = digit (( underscore? digit)+)?
     ;
 
 unsignedHexadecimalInteger
-    = "0x" (underscore? hexDigit)+
+    = "0x" ( underscore? hexDigit)+
     ;
 
 unsignedOctalInteger
-    = "0o" (underscore? octalDigit)+
+    = "0o" ( underscore? octalDigit)+
     ;
 
 unsignedBinaryInteger
-    = "0b" (underscore? binaryDigit)+
+    = "0b" ( underscore? binaryDigit)+
     ;
 
 approximateNumericLiteral
@@ -3128,7 +3128,7 @@ delimitedIdentifier
     ;
 
 identifierStart
-    = "_" | "a" | "b" | "c"
+    = "a" | "b" | "c"
     ;
 
 identifierExtend
@@ -3136,11 +3136,11 @@ identifierExtend
     ;
 
 substitutedParameterReference
-    = doubleDollarSign parameterName
+    =  whitespace doubleDollarSign parameterName
     ;
 
 generalParameterReference
-    = dollarSign parameterName
+    =  whitespace dollarSign parameterName
     ;
 
 multisetAlternationOperator
@@ -3167,16 +3167,12 @@ doubleDollarSign
     = "$$"
     ;
 
-doubleMinusSign
-    = "--"
-    ;
-
 doublePeriod
     = ".."
     ;
 
 greaterThanOperator
-    = rightAngleBracket
+    =  whitespace rightAngleBracket whitespace 
     ;
 
 greaterThanOrEqualsOperator
@@ -3212,7 +3208,7 @@ leftTildeSlash
     ;
 
 lessThanOperator
-    = leftAngleBracket
+    =  whitespace leftAngleBracket whitespace 
     ;
 
 lessThanOrEqualsOperator
@@ -3275,54 +3271,8 @@ tildeSlash
     = "~/"
     ;
 
-doubleSolidus
-    = "//"
-    ;
-
-separator
-    = (comment | whitespace)+
-    ;
-
 whitespace
     = " "
-    ;
-
-comment
-    = simpleComment
-    | bracketedComment
-    ;
-
-simpleComment
-    = simpleCommentIntroducer (simpleCommentCharacter+)? newline
-    ;
-
-simpleCommentIntroducer
-    = doubleSolidus
-    | doubleMinusSign
-    ;
-
-simpleCommentCharacter
-    = "a" | "b" | "c"
-    ;
-
-bracketedComment
-    = bracketedCommentIntroducer bracketedCommentContents bracketedCommentTerminator
-    ;
-
-bracketedCommentIntroducer
-    = "/*"
-    ;
-
-bracketedCommentTerminator
-    = "*/"
-    ;
-
-bracketedCommentContents
-    = "a" | "b" | "c"
-    ;
-
-newline
-    = "\n"
     ;
 
 edgeSynonym
@@ -3341,7 +3291,7 @@ nodeSynonym
     ;
 
 implies
-    = rightDoubleArrow
+    =  whitespace rightDoubleArrow whitespace 
     | " IMPLIES "
     ;
 
@@ -3384,10 +3334,6 @@ octalDigit
 binaryDigit
     = "0"
     | "1"
-    ;
-
-space
-    = " "
     ;
 
 ampersand
