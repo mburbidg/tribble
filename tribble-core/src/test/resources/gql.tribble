@@ -1324,15 +1324,15 @@ predefinedSchemaReference
     ;
 
 absoluteDirectoryPath
-    =  whitespace solidus whitespace  simpleDirectoryPath?
+    =  whitespace solidus  simpleDirectoryPath?
     ;
 
 relativeDirectoryPath
-    =  whitespace doublePeriod whitespace  (( whitespace solidus whitespace  whitespace  doublePeriod whitespace )+ whitespace  solidus whitespace  simpleDirectoryPath?)?
+    =  whitespace doublePeriod (solidus  doublePeriod )* solidus simpleDirectoryPath?
     ;
 
 simpleDirectoryPath
-    = (directoryName whitespace  solidus whitespace )+
+    = (directoryName  solidus)+
     ;
 
 graphReference
@@ -2974,8 +2974,8 @@ byteStringLiteral
     ;
 
 sign
-    =  whitespace plusSign whitespace 
-    |  whitespace minusSign whitespace 
+    =  plusSign 
+    |  minusSign 
     ;
 
 unsignedNumericLiteral
